@@ -1,5 +1,3 @@
-use image;
-
 mod math;
 mod object;
 mod ray;
@@ -13,7 +11,7 @@ fn ray_color(ray: ray::Ray, world: &object::HittableList) -> math::Vector3<f32> 
         front_face: false,
     };
 
-    if world.hit(&ray, 0.0, std::f32::INFINITY, &mut hit_record) {
+    if world.hit(&ray, 0.0, f32::INFINITY, &mut hit_record) {
         return math::Vector3::new(
             hit_record.normal.x() + 1.0,
             hit_record.normal.y() + 1.0,
@@ -24,7 +22,7 @@ fn ray_color(ray: ray::Ray, world: &object::HittableList) -> math::Vector3<f32> 
     let unit_direction = ray.direction.normalize();
     let a = 0.5 * (unit_direction.y() + 1.0);
 
-    return math::Vector3::new(1.0 - a, 1.0 - a, 1.0 - a) + math::Vector3::new(0.5, 0.7, 1.0) * a;
+    math::Vector3::new(1.0 - a, 1.0 - a, 1.0 - a) + math::Vector3::new(0.5, 0.7, 1.0) * a
 }
 
 fn main() {
