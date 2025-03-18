@@ -2,7 +2,7 @@ use num::traits::real::Real;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vector3<T> {
     e: [T; 3],
 }
@@ -236,19 +236,3 @@ mod tests {
         assert_eq!(neg_v, Vector3::new(-1.0, 2.0, -3.0));
     }
 }
-
-// pub fn dot<T>(u: Vector3<T>, v: Vector3<T>)  -> T where T: Number {
-//     u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2]
-// }
-
-// pub fn cross<T>(u: Vector3<T>, v: Vector3<T>) -> Vector3<T> where T: Number {
-//     Vector3::new(
-//         u.e[1] * v.e[2] - u.e[2] * v.e[1],
-//         u.e[2] * v.e[0] - u.e[0] * v.e[2],
-//         u.e[0] * v.e[1] - u.e[1] * v.e[0],
-//     )
-// }
-
-// pub fn unit_vector<T>(v: Vector3<T>) -> Vector3<T>  where T: Number {
-//     v / v.length()
-// }
