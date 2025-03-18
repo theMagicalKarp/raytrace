@@ -1,6 +1,8 @@
+use crate::interval::Interval;
 use crate::math;
 use crate::ray::Ray;
 
+#[derive(Debug, Copy, Clone, Default)]
 pub struct HitRecord {
     pub point: math::Vector3<f32>,
     pub normal: math::Vector3<f32>,
@@ -20,7 +22,7 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, ray_tmin: f32, ray_tmax: f32, record: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool;
 }
 
 pub struct Sphere {
@@ -29,7 +31,7 @@ pub struct Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, ray_tmin: f32, ray_tmax: f32, record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
         let oc = r.origin - self.center;
         let a = (r.direction * r.direction).sum();
         let half_b = oc.dot(r.direction);
@@ -43,9 +45,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range.
         let mut root = (-half_b - sqrtd) / a;
-        if root < ray_tmin || ray_tmax < root {
+        if !interval.surrounds(root) {
             root = (-half_b + sqrtd) / a;
-            if root < ray_tmin || ray_tmax < root {
+            if !interval.surrounds(root) {
                 return false;
             }
         }
@@ -77,14 +79,14 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, ray_tmin: f32, ray_tmax: f32, record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
         let mut hit_anything = false;
-        let mut closest_so_far = ray_tmax;
+        let mut closest_so_far = *interval;
 
         for object in &self.objects {
-            if object.hit(r, ray_tmin, closest_so_far, record) {
+            if object.hit(r, &closest_so_far, record) {
                 hit_anything = true;
-                closest_so_far = record.t;
+                closest_so_far.max = record.t;
             }
         }
 
