@@ -1,13 +1,19 @@
+use num::One;
 use num::traits::real::Real;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
+use rand::distr::uniform::SampleUniform;
+use rand::prelude::*;
+use rand::rngs::ThreadRng;
+use std::ops::Range;
+
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vector3<T> {
-    e: [T; 3],
+    pub e: [T; 3],
 }
 
-pub trait Number: fmt::Display + Real {}
+pub trait Number: fmt::Display + Real + SampleUniform + One {}
 impl Number for f32 {}
 impl Number for f64 {}
 
@@ -41,6 +47,30 @@ where
 
     pub fn dot(&self, v: Vector3<T>) -> T {
         self.e[0] * v.e[0] + self.e[1] * v.e[1] + self.e[2] * v.e[2]
+    }
+
+    pub fn random(rng: &mut ThreadRng, range: Range<T>) -> Self {
+        Vector3::new(
+            rng.random_range(range.clone()),
+            rng.random_range(range.clone()),
+            rng.random_range(range.clone()),
+        )
+    }
+
+    pub fn random_normal(rng: &mut ThreadRng) -> Vector3<T> {
+        loop {
+            let position = Vector3::<T>::random(rng, -T::one()..T::one());
+            let lensq = (position * position).sum();
+            if T::epsilon() < lensq && lensq <= T::one() {
+                return position / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn near_zero(&self) -> bool {
+        self.e[0].abs() < T::epsilon()
+            && self.e[1].abs() < T::epsilon()
+            && self.e[1].abs() < T::epsilon()
     }
 
     pub fn sum(&self) -> T {

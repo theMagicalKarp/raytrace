@@ -1,13 +1,17 @@
 use crate::interval::Interval;
+use crate::material::Lambertian;
+use crate::material::Material;
 use crate::math;
 use crate::ray::Ray;
 
-#[derive(Debug, Copy, Clone, Default)]
+use std::rc::Rc;
+
 pub struct HitRecord {
     pub point: math::Vector3<f32>,
     pub normal: math::Vector3<f32>,
     pub t: f32,
     pub front_face: bool,
+    pub material: Rc<dyn Material>,
 }
 
 impl HitRecord {
@@ -19,6 +23,16 @@ impl HitRecord {
             -outward_normal
         };
     }
+
+    pub fn default() -> Self {
+        HitRecord {
+            point: math::Vector3::default(),
+            normal: math::Vector3::default(),
+            t: 0.0,
+            front_face: false,
+            material: Rc::new(Lambertian::new(math::Vector3::new(1.0, 0.75, 0.79))),
+        }
+    }
 }
 
 pub trait Hittable {
@@ -28,6 +42,7 @@ pub trait Hittable {
 pub struct Sphere {
     pub center: math::Vector3<f32>,
     pub radius: f32,
+    pub material: Rc<dyn Material>,
 }
 
 impl Hittable for Sphere {
@@ -57,6 +72,7 @@ impl Hittable for Sphere {
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(r, outward_normal);
         record.normal = (record.point - self.center) / self.radius;
+        record.material = Rc::clone(&self.material);
 
         true
     }

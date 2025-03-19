@@ -25,6 +25,16 @@ impl Interval {
     //     value >= self.min && value <= self.max
     // }
 
+    pub fn clamp(&self, value: f32) -> f32 {
+        if value < self.min {
+            self.min
+        } else if value > self.max {
+            self.max
+        } else {
+            value
+        }
+    }
+
     pub fn surrounds(&self, value: f32) -> bool {
         value > self.min && value < self.max
     }
