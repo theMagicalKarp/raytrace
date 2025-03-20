@@ -51,6 +51,13 @@ where
         *self - n * (self.dot(n) * (T::one() + T::one()))
     }
 
+    pub fn refract(&self, n: Vector3<T>, etai_over_etat: T) -> Self {
+        let cos_theta = T::min((-*self).dot(n), T::one());
+        let r_out_perp = (*self + n * cos_theta) * etai_over_etat;
+        let r_out_parallel = n * (-T::sqrt(T::abs(T::one() - (r_out_perp * r_out_perp).sum())));
+        r_out_perp + r_out_parallel
+    }
+
     pub fn random(range: Range<T>) -> Self {
         let mut rng = rand::rng();
         Vector3::new(
@@ -276,5 +283,44 @@ mod tests {
         let v = Vector3::new(1.0, -2.0, 3.0);
         let neg_v = -v;
         assert_eq!(neg_v, Vector3::new(-1.0, 2.0, -3.0));
+    }
+
+    #[test]
+    fn test_vector3_dot() {
+        let v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(4.0, 5.0, 6.0);
+        let dot_product = v1.dot(v2);
+        assert_eq!(dot_product, 32.0);
+    }
+
+    #[test]
+    fn test_vector3_reflect() {
+        let v = Vector3::new(1.0, -1.0, 0.0);
+        let n = Vector3::new(0.0, 1.0, 0.0);
+        let reflected = v.reflect(n);
+        assert_eq!(reflected, Vector3::new(1.0, 1.0, 0.0));
+    }
+
+    #[test]
+    fn test_vector3_refract() {
+        let v = Vector3::new(1.0, -1.0, 0.0);
+        let n = Vector3::new(0.0, 1.0, 0.0);
+        let refracted = v.refract(n, 1.0 / 1.5);
+        assert_eq!(
+            refracted,
+            Vector3::new(0.6666666666666666, -0.7453559924999299, 0.0)
+        );
+    }
+
+    #[test]
+    fn test_vector3_near_zero() {
+        let v = Vector3::new(1e-16, 1e-16, 1e-16);
+        assert!(v.near_zero());
+    }
+
+    #[test]
+    fn test_vector3_sum() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(v.sum(), 6.0);
     }
 }

@@ -74,7 +74,6 @@ impl Hittable for Sphere {
         record.point = r.at(root);
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(r, outward_normal);
-        record.normal = (record.point - self.center) / self.radius;
         record.material = Arc::clone(&self.material);
 
         true
