@@ -3,15 +3,15 @@ use crate::material::Lambertian;
 use crate::material::Material;
 use crate::math;
 use crate::ray::Ray;
-
-use std::rc::Rc;
+use std::marker::Sync;
+use std::sync::Arc;
 
 pub struct HitRecord {
     pub point: math::Vector3<f32>,
     pub normal: math::Vector3<f32>,
     pub t: f32,
     pub front_face: bool,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -30,20 +30,23 @@ impl HitRecord {
             normal: math::Vector3::default(),
             t: 0.0,
             front_face: false,
-            material: Rc::new(Lambertian::new(math::Vector3::new(1.0, 0.75, 0.79))),
+            material: Arc::new(Lambertian::new(math::Vector3::new(1.0, 0.75, 0.79))),
         }
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync + Send {
     fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool;
 }
 
 pub struct Sphere {
     pub center: math::Vector3<f32>,
     pub radius: f32,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
 }
+
+unsafe impl Sync for Sphere {}
+unsafe impl Send for Sphere {}
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
@@ -72,7 +75,7 @@ impl Hittable for Sphere {
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(r, outward_normal);
         record.normal = (record.point - self.center) / self.radius;
-        record.material = Rc::clone(&self.material);
+        record.material = Arc::clone(&self.material);
 
         true
     }

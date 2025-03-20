@@ -1,7 +1,6 @@
 use crate::math::Vector3;
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use rand::rngs::ThreadRng;
 
 pub trait Material {
     fn scatter(
@@ -10,7 +9,6 @@ pub trait Material {
         record: &HitRecord,
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
-        rng: &mut ThreadRng,
     ) -> bool;
 }
 
@@ -31,9 +29,8 @@ impl Material for Lambertian {
         record: &HitRecord,
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
-        rng: &mut ThreadRng,
     ) -> bool {
-        let mut scatter_direction = record.normal + Vector3::random_normal(rng);
+        let mut scatter_direction = record.normal + Vector3::random_normal();
         if scatter_direction.near_zero() {
             scatter_direction = record.normal;
         }
@@ -42,5 +39,34 @@ impl Material for Lambertian {
         scattered.direction = scatter_direction;
         attenuation.e = self.albedo.e;
         true
+    }
+}
+
+pub struct Metal {
+    pub albedo: Vector3<f32>,
+    pub roughness: f32,
+}
+
+impl Metal {
+    pub fn new(albedo: Vector3<f32>, roughness: f32) -> Self {
+        Metal { albedo, roughness }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        record: &HitRecord,
+        attenuation: &mut Vector3<f32>,
+        scattered: &mut Ray,
+    ) -> bool {
+        let mut reflected = r_in.direction.reflect(record.normal);
+        reflected = reflected.normalize() + (Vector3::random_normal() * self.roughness);
+
+        scattered.origin = record.point;
+        scattered.direction = reflected;
+        attenuation.e = self.albedo.e;
+        scattered.direction.dot(record.normal) > 0.0
     }
 }
