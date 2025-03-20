@@ -11,6 +11,7 @@ use math::Vector3;
 use object::HittableList;
 use object::Sphere;
 
+use crate::material::Dielectric;
 use crate::material::Lambertian;
 use crate::material::Metal;
 use std::sync::Arc;
@@ -31,6 +32,9 @@ fn main() {
     });
     let mut world = HittableList::new();
 
+    let glass = Dielectric::new(1.5);
+    let metal = Metal::new(Vector3::new(0.8, 0.8, 0.8), 0.05);
+
     world.add(Box::new(Sphere {
         center: Vector3::new(0.0, 0.0, -1.2),
         radius: 0.5,
@@ -40,13 +44,13 @@ fn main() {
     world.add(Box::new(Sphere {
         center: Vector3::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Arc::new(Metal::new(Vector3::new(0.8, 0.8, 0.8), 0.05)),
+        material: Arc::new(metal),
     }));
 
     world.add(Box::new(Sphere {
         center: Vector3::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Arc::new(Metal::new(Vector3::new(0.8, 0.6, 0.2), 0.85)),
+        material: Arc::new(glass),
     }));
 
     world.add(Box::new(Sphere {
