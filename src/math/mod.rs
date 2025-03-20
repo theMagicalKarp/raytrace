@@ -1,11 +1,9 @@
-use num::One;
 use num::traits::real::Real;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use rand::distr::uniform::SampleUniform;
 use rand::prelude::*;
-use rand::rngs::ThreadRng;
 use std::ops::Range;
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
@@ -13,7 +11,7 @@ pub struct Vector3<T> {
     pub e: [T; 3],
 }
 
-pub trait Number: fmt::Display + Real + SampleUniform + One {}
+pub trait Number: fmt::Display + Real + SampleUniform {}
 impl Number for f32 {}
 impl Number for f64 {}
 
@@ -49,7 +47,12 @@ where
         self.e[0] * v.e[0] + self.e[1] * v.e[1] + self.e[2] * v.e[2]
     }
 
-    pub fn random(rng: &mut ThreadRng, range: Range<T>) -> Self {
+    pub fn reflect(&self, n: Vector3<T>) -> Self {
+        *self - n * (self.dot(n) * (T::one() + T::one()))
+    }
+
+    pub fn random(range: Range<T>) -> Self {
+        let mut rng = rand::rng();
         Vector3::new(
             rng.random_range(range.clone()),
             rng.random_range(range.clone()),
@@ -57,9 +60,18 @@ where
         )
     }
 
-    pub fn random_normal(rng: &mut ThreadRng) -> Vector3<T> {
+    pub fn random_box(range: Range<T>) -> Self {
+        let mut rng = rand::rng();
+        Vector3::new(
+            rng.random_range(range.clone()),
+            rng.random_range(range.clone()),
+            T::zero(),
+        )
+    }
+
+    pub fn random_normal() -> Vector3<T> {
         loop {
-            let position = Vector3::<T>::random(rng, -T::one()..T::one());
+            let position = Vector3::<T>::random(-T::one()..T::one());
             let lensq = (position * position).sum();
             if T::epsilon() < lensq && lensq <= T::one() {
                 return position / lensq.sqrt();
