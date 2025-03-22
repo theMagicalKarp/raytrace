@@ -1,4 +1,5 @@
 mod camera;
+mod config;
 mod interval;
 mod material;
 mod math;
@@ -6,63 +7,87 @@ mod object;
 mod ray;
 
 use camera::Camera;
-use camera::CameraOptions;
-use math::Vector3;
+use clap::Parser;
+use colored::Colorize;
+use config::Config;
+use config::Object;
+use config::span_dump;
 use object::HittableList;
-use object::Sphere;
-
-use crate::material::Dielectric;
-use crate::material::Lambertian;
-use crate::material::Metal;
+use std::fs;
+use std::path::PathBuf;
 use std::sync::Arc;
 
-fn main() {
-    let aspect_ratio: f32 = 16.0 / 9.0;
-    let image_width: u32 = 400;
-    let samples: u32 = 100;
-    let max_bounces: u32 = 50;
-    let threads: usize = 8;
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Path of toml configuration file
+    #[arg(short, long, value_parser=file_exists)]
+    config: PathBuf,
 
-    let camera = Camera::new(CameraOptions {
-        aspect_ratio,
-        image_width,
-        samples,
-        max_bounces,
-        threads,
-    });
+    /// Path of file to save the render to
+    #[arg(short, long, default_value = "render.png")]
+    output: PathBuf,
+}
+
+fn file_exists(path: &str) -> Result<PathBuf, String> {
+    let path_buf = PathBuf::from(path);
+    if path_buf.is_file() {
+        Ok(path_buf)
+    } else {
+        Err(format!("File does not exist: {}", path))
+    }
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let config_content = match fs::read_to_string(&args.config) {
+        Ok(content) => content,
+        Err(e) => {
+            println!("Error reading config file: {}", e);
+            return;
+        }
+    };
+
+    let config: Config = match toml::from_str(&config_content) {
+        Ok(config) => config,
+        Err(e) => {
+            if let Some(span) = e.span() {
+                println!(
+                    "{}{} {}",
+                    "error".bold().red(),
+                    ":".bold(),
+                    e.message().bold()
+                );
+                println!(
+                    "  {} {}:{}:{}",
+                    "-->".blue(),
+                    args.config.display(),
+                    span.start,
+                    span.end
+                );
+                println!("{}", span_dump(&config_content, span));
+                return;
+            }
+
+            println!("Error parsing config file: {}", e);
+            return;
+        }
+    };
+
+    println!("{}", config);
+
+    let camera = Camera::new(config.camera);
     let mut world = HittableList::new();
 
-    let glass = Dielectric::new(1.5);
-    let metal = Metal::new(Vector3::new(0.8, 0.8, 0.8), 0.05);
+    for object in config.objects {
+        match object {
+            Object::Sphere(sphere) => world.add(Box::new(sphere)),
+        }
+    }
 
-    world.add(Box::new(Sphere {
-        center: Vector3::new(0.0, 0.0, -1.2),
-        radius: 0.5,
-        material: Arc::new(Lambertian::new(Vector3::new(0.1, 0.2, 0.5))),
-    }));
-
-    world.add(Box::new(Sphere {
-        center: Vector3::new(-1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Arc::new(metal),
-    }));
-
-    world.add(Box::new(Sphere {
-        center: Vector3::new(1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Arc::new(glass),
-    }));
-
-    world.add(Box::new(Sphere {
-        center: Vector3::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: Arc::new(Lambertian::new(Vector3::new(0.8, 0.8, 0.0))),
-    }));
-
-    let image = camera.render(Arc::new(world));
-
-    match image.save("render.png") {
-        Ok(_) => println!("Image saved"),
+    match camera.render(Arc::new(world)).save(args.output) {
+        Ok(_) => println!("Image saved successfully."),
         Err(e) => println!("Error saving image: {}", e),
     }
 }
