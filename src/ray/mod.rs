@@ -1,4 +1,4 @@
-use crate::math::Vector3;
+use nalgebra::Vector3;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Ray {
