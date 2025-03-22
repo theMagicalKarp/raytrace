@@ -1,36 +1,36 @@
 use crate::interval::Interval;
 use crate::material::Lambertian;
 use crate::material::Material;
-use crate::math;
 use crate::ray::Ray;
+use nalgebra::Vector3;
 use std::marker::Sync;
 use std::sync::Arc;
 
 pub struct HitRecord {
-    pub point: math::Vector3<f32>,
-    pub normal: math::Vector3<f32>,
+    pub point: Vector3<f32>,
+    pub normal: Vector3<f32>,
     pub t: f32,
     pub front_face: bool,
     pub material: Arc<dyn Material>,
 }
 
 impl HitRecord {
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: math::Vector3<f32>) {
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vector3<f32>) {
         self.front_face = r.direction.dot(outward_normal) < 0.0;
         self.normal = if self.front_face {
-            outward_normal
+            *outward_normal
         } else {
-            -outward_normal
+            -*outward_normal
         };
     }
 
     pub fn default() -> Self {
         HitRecord {
-            point: math::Vector3::default(),
-            normal: math::Vector3::default(),
+            point: Vector3::default(),
+            normal: Vector3::default(),
             t: 0.0,
             front_face: false,
-            material: Arc::new(Lambertian::new(math::Vector3::new(1.0, 0.75, 0.79))),
+            material: Arc::new(Lambertian::new(Vector3::new(1.0, 0.75, 0.79))),
         }
     }
 }
@@ -39,8 +39,9 @@ pub trait Hittable: Sync + Send {
     fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool;
 }
 
+#[derive(Debug)]
 pub struct Sphere {
-    pub center: math::Vector3<f32>,
+    pub center: Vector3<f32>,
     pub radius: f32,
     pub material: Arc<dyn Material>,
 }
@@ -51,9 +52,9 @@ unsafe impl Send for Sphere {}
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
         let oc = r.origin - self.center;
-        let a = (r.direction * r.direction).sum();
-        let half_b = oc.dot(r.direction);
-        let c = (oc * oc).sum() - self.radius * self.radius;
+        let a = r.direction.norm_squared();
+        let half_b = oc.dot(&r.direction);
+        let c = oc.norm_squared() - self.radius * self.radius;
 
         let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {
@@ -73,7 +74,7 @@ impl Hittable for Sphere {
         record.t = root;
         record.point = r.at(root);
         let outward_normal = (record.point - self.center) / self.radius;
-        record.set_face_normal(r, outward_normal);
+        record.set_face_normal(r, &outward_normal);
         record.material = Arc::clone(&self.material);
 
         true
