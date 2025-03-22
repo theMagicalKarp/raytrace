@@ -1,8 +1,32 @@
-use crate::math::Vector3;
+use crate::math;
 use crate::object::HitRecord;
 use crate::ray::Ray;
+use nalgebra::Vector3;
+use rand::prelude::*;
+use std::fmt::Debug;
 
-pub trait Material {
+pub fn near_zero(v: &Vector3<f32>) -> bool {
+    v.x.abs() < f32::EPSILON && v.y.abs() < f32::EPSILON && v.z.abs() < f32::EPSILON
+}
+
+pub fn reflect(a: &Vector3<f32>, n: &Vector3<f32>) -> Vector3<f32> {
+    a - n * (a.dot(n) * 2.0)
+}
+
+pub fn refract(uv: &Vector3<f32>, n: &Vector3<f32>, etai_over_etat: f32) -> Vector3<f32> {
+    let cos_theta = f32::min((-uv).dot(n), 1.0);
+    let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    let r_out_parallel = -((1.0 - r_out_perp.norm_squared()).abs()).sqrt() * n;
+    r_out_perp + r_out_parallel
+}
+
+pub fn reflectance(cosine: f32, refraction_index: f32) -> f32 {
+    let r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+    let r1 = r0 * r0;
+    r1 + (1.0 - r1) * (1.0 - cosine).powf(5.0)
+}
+
+pub trait Material: Debug {
     fn scatter(
         &self,
         ray_in: &Ray,
@@ -12,6 +36,7 @@ pub trait Material {
     ) -> bool;
 }
 
+#[derive(Debug)]
 pub struct Lambertian {
     pub albedo: Vector3<f32>,
 }
@@ -30,18 +55,19 @@ impl Material for Lambertian {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool {
-        let mut scatter_direction = record.normal + Vector3::random_normal();
-        if scatter_direction.near_zero() {
+        let mut scatter_direction = record.normal + math::random_normal();
+        if near_zero(&scatter_direction) {
             scatter_direction = record.normal;
         }
 
         scattered.origin = record.point;
         scattered.direction = scatter_direction;
-        attenuation.e = self.albedo.e;
+        attenuation.copy_from(&self.albedo);
         true
     }
 }
 
+#[derive(Debug)]
 pub struct Metal {
     pub albedo: Vector3<f32>,
     pub roughness: f32,
@@ -61,16 +87,17 @@ impl Material for Metal {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool {
-        let mut reflected = r_in.direction.reflect(record.normal);
-        reflected = reflected.normalize() + (Vector3::random_normal() * self.roughness);
+        let mut reflected = reflect(&r_in.direction, &record.normal);
+        reflected = reflected.normalize() + (math::random_normal() * self.roughness);
 
         scattered.origin = record.point;
         scattered.direction = reflected;
-        attenuation.e = self.albedo.e;
-        scattered.direction.dot(record.normal) > 0.0
+        attenuation.copy_from(&self.albedo);
+        scattered.direction.dot(&record.normal) > 0.0
     }
 }
 
+#[derive(Debug)]
 pub struct Dielectric {
     pub refraction_index: f32,
 }
@@ -89,16 +116,26 @@ impl Material for Dielectric {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool {
-        attenuation.e = [1.0, 1.0, 1.0];
+        attenuation.copy_from(&Vector3::new(1.0, 1.0, 1.0));
         let r_index = match record.front_face {
             true => 1.0 / self.refraction_index,
             false => self.refraction_index,
         };
 
         let normalized_direction = r_in.direction.normalize();
-        let refraced = normalized_direction.refract(record.normal, r_index);
+
+        let cos_theta = f32::min((-normalized_direction).dot(&record.normal), 1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        let cannot_refract = r_index * sin_theta > 1.0;
+
         scattered.origin = record.point;
-        scattered.direction = refraced;
+        let mut rng = rand::rng();
+        let random = rng.random_range(0.0f32..1.0f32);
+
+        scattered.direction = match cannot_refract || (reflectance(cos_theta, r_index) > random) {
+            true => reflect(&normalized_direction, &record.normal),
+            false => refract(&normalized_direction, &record.normal, r_index),
+        };
 
         true
     }

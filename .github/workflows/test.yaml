@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  CLICOLOR_FORCE: 'true'
+
 jobs:
   test:
     name: cargo test
@@ -28,3 +31,42 @@ jobs:
         uses: actions-rust-lang/rustfmt@v1
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features
+
+  build:
+    name: cargo build
+    needs: [test, formatting]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Run Clippy
+        run: cargo build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: target/release/raytrace
+          retention-days: 3
+
+  render:
+    name: render ${{ matrix.config }}
+    needs: [build]
+    strategy:
+      matrix:
+        config:
+          - basic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: target/release
+      - run: chmod +x ./target/release/raytrace
+      - env:
+          CONFIG: ${{ matrix.config }}
+        run: ./target/release/raytrace --config "examples/$CONFIG/render.toml" --output render.png
+      - uses: actions/upload-artifact@v4
+        with:
+            name: ${{ matrix.config }}-render
+            path: render.png
+            retention-days: 3
