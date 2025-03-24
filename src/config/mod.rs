@@ -121,6 +121,7 @@ impl MaterialDef {
 struct RawSphere {
     #[serde(rename = "position")]
     center: [f32; 3],
+    direction: Option<[f32; 3]>,
     radius: f32,
     #[serde(flatten)]
     material_def: MaterialDef,
@@ -128,11 +129,17 @@ struct RawSphere {
 
 impl RawSphere {
     fn into_sphere(self) -> Sphere {
-        Sphere {
-            center: Vector3::new(self.center[0], self.center[1], self.center[2]),
-            radius: self.radius,
-            material: self.material_def.into_material(),
-        }
+        let center = Vector3::new(self.center[0], self.center[1], self.center[2]);
+        let direction = match self.direction {
+            None => Vector3::new(0.0, 0.0, 0.0),
+            Some(direction) => Vector3::new(direction[0], direction[1], direction[2]),
+        };
+        Sphere::new(
+            center,
+            direction,
+            self.radius,
+            self.material_def.into_material(),
+        )
     }
 }
 

@@ -211,7 +211,10 @@ impl Camera {
         };
         let ray_direction = pixel_sample - ray_origin;
 
-        Ray::new(ray_origin, ray_direction)
+        let mut rng = rand::rng();
+        let t = rng.random_range(0.0f32..1.0f32);
+
+        Ray::new(ray_origin, ray_direction, t)
     }
 
     pub fn defocus_disk_sample(&self) -> Vector3<f32> {
