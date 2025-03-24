@@ -41,7 +41,7 @@ pub trait Hittable: Sync + Send {
 
 #[derive(Debug)]
 pub struct Sphere {
-    pub center: Vector3<f32>,
+    pub center: Ray,
     pub radius: f32,
     pub material: Arc<dyn Material>,
 }
@@ -49,9 +49,26 @@ pub struct Sphere {
 unsafe impl Sync for Sphere {}
 unsafe impl Send for Sphere {}
 
+impl Sphere {
+    pub fn new(
+        center: Vector3<f32>,
+        direction: Vector3<f32>,
+        radius: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        Sphere {
+            center: Ray::new(center, direction, 0.0),
+            radius,
+            material,
+        }
+    }
+}
+
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
-        let oc = r.origin - self.center;
+        let current_center = self.center.at(r.time);
+        let oc = r.origin - current_center;
+
         let a = r.direction.norm_squared();
         let half_b = oc.dot(&r.direction);
         let c = oc.norm_squared() - self.radius * self.radius;
@@ -73,7 +90,7 @@ impl Hittable for Sphere {
 
         record.t = root;
         record.point = r.at(root);
-        let outward_normal = (record.point - self.center) / self.radius;
+        let outward_normal = (record.point - current_center) / self.radius;
         record.set_face_normal(r, &outward_normal);
         record.material = Arc::clone(&self.material);
 
