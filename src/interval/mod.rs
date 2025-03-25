@@ -9,21 +9,15 @@ impl Interval {
         Self { min, max }
     }
 
-    // pub fn empty() -> Self {
-    //     Self { min: f32::INFINITY, max: f32::NEG_INFINITY }
-    // }
+    pub fn combine(a: Interval, b: Interval) -> Interval {
+        let min = a.min.min(b.min);
+        let max = a.max.max(b.max);
+        Interval { min, max }
+    }
 
-    // pub fn universe() -> Self {
-    //     Self { min: f32::NEG_INFINITY, max: f32::INFINITY }
-    // }
-
-    // pub fn size(&self) -> f32 {
-    //     self.max-self.min
-    // }
-
-    // pub fn contains(&self, value: f32) -> bool {
-    //     value >= self.min && value <= self.max
-    // }
+    pub fn size(&self) -> f32 {
+        self.max - self.min
+    }
 
     pub fn clamp(&self, value: f32) -> f32 {
         if value < self.min {
@@ -37,5 +31,31 @@ impl Interval {
 
     pub fn surrounds(&self, value: f32) -> bool {
         value > self.min && value < self.max
+    }
+}
+
+impl Default for Interval {
+    fn default() -> Self {
+        let min = f32::INFINITY;
+        let max = f32::NEG_INFINITY;
+        Interval { min, max }
+    }
+}
+
+impl PartialEq for Interval {
+    fn eq(&self, other: &Self) -> bool {
+        self.min == other.min && self.max == other.max
+    }
+}
+
+impl PartialOrd for Interval {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        if self.min < other.min {
+            Some(std::cmp::Ordering::Less)
+        } else if self.min > other.min {
+            Some(std::cmp::Ordering::Greater)
+        } else {
+            Some(std::cmp::Ordering::Equal)
+        }
     }
 }

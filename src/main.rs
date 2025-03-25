@@ -12,7 +12,8 @@ use colored::Colorize;
 use config::Config;
 use config::Object;
 use config::span_dump;
-use object::HittableList;
+use object::bvh_node::BvhNode;
+use object::hittable::Hittable;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -78,13 +79,15 @@ fn main() {
     println!("{}", config);
 
     let camera = Camera::new(config.camera);
-    let mut world = HittableList::new();
+    let mut objects = Vec::<Arc<dyn Hittable>>::new();
 
     for object in config.objects {
         match object {
-            Object::Sphere(sphere) => world.add(Box::new(sphere)),
+            Object::Sphere(sphere) => objects.push(Arc::new(sphere)),
         }
     }
+
+    let world = BvhNode::new(objects);
 
     match camera.render(Arc::new(world)).save(args.output) {
         Ok(_) => println!("Image saved successfully."),
