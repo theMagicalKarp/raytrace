@@ -12,7 +12,7 @@ use colored::Colorize;
 use config::Config;
 use config::Object;
 use config::span_dump;
-use object::bvh_node::BvhNode;
+use object::bvh::BvhNode;
 use object::hittable::Hittable;
 use std::fs;
 use std::path::PathBuf;
