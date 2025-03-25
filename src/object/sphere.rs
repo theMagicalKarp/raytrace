@@ -5,6 +5,7 @@ use crate::object::hittable::HitRecord;
 use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use std::f32::consts::PI;
 use std::marker::Sync;
 use std::sync::Arc;
 
@@ -18,6 +19,13 @@ pub struct Sphere {
 
 unsafe impl Sync for Sphere {}
 unsafe impl Send for Sphere {}
+
+pub fn get_sphere_uv(point: Vector3<f32>) -> (f32, f32) {
+    let theta = point.y.acos();
+    let phi = (-point.z).atan2(point.x) + PI;
+
+    (phi / (2.0 * PI), theta / PI)
+}
 
 impl Sphere {
     pub fn new(
@@ -70,6 +78,7 @@ impl Hittable for Sphere {
         let outward_normal = (record.point - current_center) / self.radius;
         record.set_face_normal(r, &outward_normal);
         record.material = Arc::clone(&self.material);
+        (record.u, record.v) = get_sphere_uv(outward_normal);
 
         true
     }

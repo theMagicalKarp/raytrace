@@ -13,6 +13,8 @@ pub struct HitRecord {
     pub t: f32,
     pub front_face: bool,
     pub material: Arc<dyn Material>,
+    pub u: f32,
+    pub v: f32,
 }
 
 impl HitRecord {
@@ -31,7 +33,9 @@ impl HitRecord {
             normal: Vector3::default(),
             t: 0.0,
             front_face: false,
-            material: Arc::new(Lambertian::new(Vector3::new(1.0, 0.75, 0.79))),
+            material: Arc::new(Lambertian::default()),
+            u: 0.0,
+            v: 0.0,
         }
     }
 }

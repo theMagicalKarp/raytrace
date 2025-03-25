@@ -1,13 +1,14 @@
 pub mod dielectric;
 pub mod lambertian;
 pub mod metal;
+pub mod texture;
 
 use crate::object::hittable::HitRecord;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use std::fmt::Debug;
 
-pub trait Material: Debug {
+pub trait Material: Debug + Sync + Send {
     fn scatter(
         &self,
         ray_in: &Ray,

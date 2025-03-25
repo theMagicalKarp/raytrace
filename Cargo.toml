@@ -11,5 +11,9 @@ image = "0.25.5"
 nalgebra = "0.33.2"
 rand = "0.9.0"
 serde = { version = "1.0.219", features = ["derive"] }
+serde-inline-default = "0.2.3"
 threadpool = "1.8.1"
 toml = "0.8.20"
+
+[profile.dev]
+opt-level = 3

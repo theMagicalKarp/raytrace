@@ -16,8 +16,9 @@ focus_dist = 10.0
 shape = "sphere"
 position = [0.0, -1000.0, 0.0]
 radius = 1000.0
-material = "lambertian"
-albedo = [0.5, 0.5, 0.5]
+material = "checkered"
+even = [0.2, 0.3, 0.1]
+odd = [0.9, 0.9, 0.9]
 
 # Large Balls
 [[objects]]
