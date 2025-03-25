@@ -1,6 +1,6 @@
 use crate::interval::Interval;
-use crate::material::Lambertian;
 use crate::material::Material;
+use crate::material::lambertian::Lambertian;
 use crate::object::aabb::Aabb;
 use crate::ray::Ray;
 use nalgebra::Vector3;

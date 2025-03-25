@@ -1,7 +1,7 @@
-use crate::material::Dielectric;
-use crate::material::Lambertian;
 use crate::material::Material;
-use crate::material::Metal;
+use crate::material::dielectric::Dielectric;
+use crate::material::lambertian::Lambertian;
+use crate::material::metal::Metal;
 use crate::object::sphere::Sphere;
 use colored::Colorize;
 use nalgebra::Vector3;
