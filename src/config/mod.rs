@@ -2,10 +2,13 @@ use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
+use crate::material::texture::Checkered;
+use crate::material::texture::SolidColor;
 use crate::object::sphere::Sphere;
 use colored::Colorize;
 use nalgebra::Vector3;
 use serde::Deserialize;
+use serde_inline_default::serde_inline_default;
 use std::fmt;
 use std::ops::Range;
 use std::sync::Arc;
@@ -53,6 +56,7 @@ impl fmt::Display for AspectRatios {
     }
 }
 
+#[serde_inline_default]
 #[derive(Deserialize, Debug)]
 pub struct CameraOptions {
     pub aspect_ratio: AspectRatios,
@@ -66,7 +70,9 @@ pub struct CameraOptions {
     pub look_at: [f32; 3],
     pub vup: [f32; 3],
 
+    #[serde_inline_default(0.0)]
     pub defocus_angle: f32,
+    #[serde_inline_default(1.0)]
     pub focus_dist: f32,
 }
 
@@ -85,6 +91,13 @@ enum MaterialDef {
     #[serde(rename = "lambertian")]
     Lambertian { albedo: [f32; 3] },
 
+    #[serde(rename = "checkered")]
+    Checkered {
+        even: Option<[f32; 3]>,
+        odd: Option<[f32; 3]>,
+        scale: Option<f32>,
+    },
+
     #[serde(rename = "metal")]
     Metal { albedo: [f32; 3], roughness: f32 },
 
@@ -101,9 +114,22 @@ enum MaterialDef {
 impl MaterialDef {
     fn into_material(self) -> Arc<dyn Material> {
         match self {
-            MaterialDef::Lambertian { albedo } => Arc::new(Lambertian::new(Vector3::new(
-                albedo[0], albedo[1], albedo[2],
+            MaterialDef::Lambertian { albedo } => Arc::new(Lambertian::new(Arc::new(
+                SolidColor::new(Vector3::new(albedo[0], albedo[1], albedo[2])),
             ))),
+            MaterialDef::Checkered { even, odd, scale } => {
+                let scale = scale.unwrap_or(1.0);
+
+                let even = even.unwrap_or([0.05, 0.05, 0.05]);
+
+                let odd = odd.unwrap_or([0.95, 0.95, 0.95]);
+
+                let even_color = SolidColor::new(Vector3::new(even[0], even[1], even[2]));
+                let odd_color = SolidColor::new(Vector3::new(odd[0], odd[1], odd[2]));
+
+                let checkered = Checkered::new(scale, Arc::new(even_color), Arc::new(odd_color));
+                Arc::new(Lambertian::new(Arc::new(checkered)))
+            }
             MaterialDef::Metal { albedo, roughness } => Arc::new(Metal::new(
                 Vector3::new(albedo[0], albedo[1], albedo[2]),
                 roughness,
