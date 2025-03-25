@@ -1,8 +1,8 @@
 use crate::config::CameraOptions;
 use crate::interval::Interval;
 use crate::math;
-use crate::object::HitRecord;
-use crate::object::Hittable;
+use crate::object::hittable::HitRecord;
+use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 use image::RgbImage;
 use nalgebra::Vector3;

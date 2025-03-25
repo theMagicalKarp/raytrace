@@ -1,5 +1,5 @@
 use crate::math;
-use crate::object::HitRecord;
+use crate::object::hittable::HitRecord;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use rand::prelude::*;
