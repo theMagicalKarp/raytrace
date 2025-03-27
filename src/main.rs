@@ -3,41 +3,21 @@ mod config;
 mod interval;
 mod material;
 mod math;
+mod noise;
 mod object;
 mod ray;
 
 use camera::Camera;
 use clap::Parser;
 use colored::Colorize;
+use config::Args;
 use config::Config;
 use config::Object;
 use config::span_dump;
 use object::bvh::BvhNode;
 use object::hittable::Hittable;
 use std::fs;
-use std::path::PathBuf;
 use std::sync::Arc;
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Path of toml configuration file
-    #[arg(short, long, value_parser=file_exists)]
-    config: PathBuf,
-
-    /// Path of file to save the render to
-    #[arg(short, long, default_value = "render.png")]
-    output: PathBuf,
-}
-
-fn file_exists(path: &str) -> Result<PathBuf, String> {
-    let path_buf = PathBuf::from(path);
-    if path_buf.is_file() {
-        Ok(path_buf)
-    } else {
-        Err(format!("File does not exist: {}", path))
-    }
-}
 
 fn main() {
     let args = Args::parse();

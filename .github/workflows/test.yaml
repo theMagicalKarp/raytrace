@@ -55,6 +55,8 @@ jobs:
         config:
           - basic
           - bouncing_spheres
+          - earth
+          - perlin
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

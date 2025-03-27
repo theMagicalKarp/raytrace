@@ -3,15 +3,42 @@ use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::metal::Metal;
 use crate::material::texture::Checkered;
+use crate::material::texture::Image;
+use crate::material::texture::Noise;
 use crate::material::texture::SolidColor;
 use crate::object::sphere::Sphere;
+use clap::Parser;
 use colored::Colorize;
+use image::ImageReader;
 use nalgebra::Vector3;
 use serde::Deserialize;
 use serde_inline_default::serde_inline_default;
+use std::error::Error;
 use std::fmt;
 use std::ops::Range;
+use std::path::PathBuf;
 use std::sync::Arc;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+pub struct Args {
+    /// Path of toml configuration file
+    #[arg(short, long, value_parser=file_exists)]
+    pub config: PathBuf,
+
+    /// Path of file to save the render to
+    #[arg(short, long, default_value = "render.png")]
+    pub output: PathBuf,
+}
+
+fn file_exists(path: &str) -> Result<PathBuf, String> {
+    let path_buf = PathBuf::from(path);
+    if path_buf.is_file() {
+        Ok(path_buf)
+    } else {
+        Err(format!("File does not exist: {}", path))
+    }
+}
 
 #[derive(Deserialize, Debug)]
 pub enum AspectRatios {
@@ -98,6 +125,15 @@ enum MaterialDef {
         scale: Option<f32>,
     },
 
+    #[serde(rename = "texture")]
+    Texture { file: String },
+
+    #[serde(rename = "noise")]
+    Noise {
+        scale: Option<f32>,
+        turbulance: Option<u32>,
+    },
+
     #[serde(rename = "metal")]
     Metal { albedo: [f32; 3], roughness: f32 },
 
@@ -112,33 +148,49 @@ enum MaterialDef {
 }
 
 impl MaterialDef {
-    fn into_material(self) -> Arc<dyn Material> {
+    fn into_material(self) -> Result<Arc<dyn Material>, Box<dyn Error>> {
+        let args = Args::parse();
+        let config_dir = args
+            .config
+            .parent()
+            .ok_or("Failed to get parent directory")?;
+
         match self {
-            MaterialDef::Lambertian { albedo } => Arc::new(Lambertian::new(Arc::new(
+            MaterialDef::Lambertian { albedo } => Ok(Arc::new(Lambertian::new(Arc::new(
                 SolidColor::new(Vector3::new(albedo[0], albedo[1], albedo[2])),
-            ))),
+            )))),
             MaterialDef::Checkered { even, odd, scale } => {
                 let scale = scale.unwrap_or(1.0);
-
                 let even = even.unwrap_or([0.05, 0.05, 0.05]);
-
                 let odd = odd.unwrap_or([0.95, 0.95, 0.95]);
 
                 let even_color = SolidColor::new(Vector3::new(even[0], even[1], even[2]));
                 let odd_color = SolidColor::new(Vector3::new(odd[0], odd[1], odd[2]));
 
                 let checkered = Checkered::new(scale, Arc::new(even_color), Arc::new(odd_color));
-                Arc::new(Lambertian::new(Arc::new(checkered)))
+                Ok(Arc::new(Lambertian::new(Arc::new(checkered))))
             }
-            MaterialDef::Metal { albedo, roughness } => Arc::new(Metal::new(
+            MaterialDef::Texture { file } => {
+                let texture_path = config_dir.join(file);
+                let buffer = ImageReader::open(texture_path)?.decode()?.to_rgb8();
+                Ok(Arc::new(Lambertian::new(Arc::new(Image::new(buffer)))))
+            }
+            MaterialDef::Noise { scale, turbulance } => {
+                let scale = scale.unwrap_or(1.0);
+                let turbulance = turbulance.unwrap_or(1);
+                Ok(Arc::new(Lambertian::new(Arc::new(Noise::new(
+                    scale, turbulance,
+                )))))
+            }
+            MaterialDef::Metal { albedo, roughness } => Ok(Arc::new(Metal::new(
                 Vector3::new(albedo[0], albedo[1], albedo[2]),
                 roughness,
-            )),
+            ))),
             MaterialDef::Dielectric { refraction_index } => {
-                Arc::new(Dielectric::new(refraction_index))
+                Ok(Arc::new(Dielectric::new(refraction_index)))
             }
-            MaterialDef::Glass {} => Arc::new(Dielectric::new(1.5)),
-            MaterialDef::Water {} => Arc::new(Dielectric::new(1.33)),
+            MaterialDef::Glass {} => Ok(Arc::new(Dielectric::new(1.5))),
+            MaterialDef::Water {} => Ok(Arc::new(Dielectric::new(1.33))),
         }
     }
 }
@@ -154,18 +206,14 @@ struct RawSphere {
 }
 
 impl RawSphere {
-    fn into_sphere(self) -> Sphere {
+    fn into_sphere(self) -> Result<Sphere, Box<dyn Error>> {
         let center = Vector3::new(self.center[0], self.center[1], self.center[2]);
         let direction = match self.direction {
             None => Vector3::new(0.0, 0.0, 0.0),
             Some(direction) => Vector3::new(direction[0], direction[1], direction[2]),
         };
-        Sphere::new(
-            center,
-            direction,
-            self.radius,
-            self.material_def.into_material(),
-        )
+        let material = self.material_def.into_material()?;
+        Ok(Sphere::new(center, direction, self.radius, material))
     }
 }
 
@@ -187,7 +235,9 @@ impl<'de> Deserialize<'de> for Object {
         D: serde::Deserializer<'de>,
     {
         match ObjectDef::deserialize(deserializer)? {
-            ObjectDef::Sphere(raw) => Ok(Object::Sphere(raw.into_sphere())),
+            ObjectDef::Sphere(raw) => Ok(Object::Sphere(
+                raw.into_sphere().map_err(serde::de::Error::custom)?,
+            )),
         }
     }
 }
