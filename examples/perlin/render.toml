@@ -1,0 +1,26 @@
+[camera]
+aspect_ratio = "widescreen"
+image_width = 400
+samples = 100
+max_bounces = 50
+threads = 4
+fov = 20.0
+look_from = [13.0, 2.0, 3.0]
+look_at = [0.0, 0.0, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+[[objects]]
+shape = "sphere"
+position = [0.0, 2.0, 0.0]
+radius = 2
+material = "noise"
+scale = 4.0
+turbulance = 7
+
+[[objects]]
+shape = "sphere"
+position = [0.0, -1000.0, 0.0]
+radius = 1000.0
+material = "noise"
+scale = 4.0
+turbulance = 7
