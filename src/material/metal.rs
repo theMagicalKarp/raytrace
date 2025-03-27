@@ -35,4 +35,8 @@ impl Material for Metal {
         attenuation.copy_from(&self.albedo);
         scattered.direction.dot(&record.normal) > 0.0
     }
+
+    fn emitted(&self, _: f32, _: f32, _: Vector3<f32>) -> Vector3<f32> {
+        Vector3::<f32>::default()
+    }
 }

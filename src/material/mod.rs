@@ -1,5 +1,6 @@
 pub mod dielectric;
 pub mod lambertian;
+pub mod light;
 pub mod metal;
 pub mod texture;
 
@@ -16,4 +17,5 @@ pub trait Material: Debug + Sync + Send {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool;
+    fn emitted(&self, u: f32, v: f32, p: Vector3<f32>) -> Vector3<f32>;
 }

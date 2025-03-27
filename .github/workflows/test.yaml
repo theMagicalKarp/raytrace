@@ -57,6 +57,7 @@ jobs:
           - bouncing_spheres
           - earth
           - perlin
+          - cornell_box
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

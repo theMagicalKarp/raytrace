@@ -10,6 +10,7 @@ look_at = [0.0, 0.0, 0.0]
 vup = [0.0, 1.0, 0.0]
 defocus_angle = 0.6
 focus_dist = 10.0
+background = [0.70, 0.80, 0.99]
 
 # Floor
 [[objects]]

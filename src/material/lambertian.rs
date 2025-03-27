@@ -48,4 +48,8 @@ impl Material for Lambertian {
         attenuation.copy_from(&self.texture.value(record.u, record.v, record.point));
         true
     }
+
+    fn emitted(&self, _: f32, _: f32, _: Vector3<f32>) -> Vector3<f32> {
+        Vector3::<f32>::default()
+    }
 }

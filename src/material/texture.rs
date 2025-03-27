@@ -51,8 +51,8 @@ impl Checkered {
 
 impl Default for Checkered {
     fn default() -> Self {
-        let black = SolidColor::new(Vector3::new(0.01, 0.01, 0.01));
-        let white = SolidColor::new(Vector3::new(0.99, 0.99, 0.99));
+        let black = SolidColor::new(Vector3::from_element(0.01));
+        let white = SolidColor::new(Vector3::from_element(0.99));
         Checkered::new(1.0, Arc::new(black), Arc::new(white))
     }
 }
@@ -121,6 +121,6 @@ impl Noise {
 
 impl Texture for Noise {
     fn value(&self, _: f32, _: f32, p: Vector3<f32>) -> Vector3<f32> {
-        Vector3::new(1.0f32, 1.0f32, 1.0f32) * (self.perlin.turb(p * self.scale, self.turbulance))
+        Vector3::from_element(1.0f32) * (self.perlin.turb(p * self.scale, self.turbulance))
     }
 }

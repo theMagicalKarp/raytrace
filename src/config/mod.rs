@@ -1,11 +1,13 @@
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
+use crate::material::light::Light;
 use crate::material::metal::Metal;
 use crate::material::texture::Checkered;
 use crate::material::texture::Image;
 use crate::material::texture::Noise;
 use crate::material::texture::SolidColor;
+use crate::object::quad::Quad;
 use crate::object::sphere::Sphere;
 use clap::Parser;
 use colored::Colorize;
@@ -101,6 +103,9 @@ pub struct CameraOptions {
     pub defocus_angle: f32,
     #[serde_inline_default(1.0)]
     pub focus_dist: f32,
+
+    #[serde(default)]
+    pub background: [f32; 3],
 }
 
 impl CameraOptions {
@@ -145,6 +150,9 @@ enum MaterialDef {
 
     #[serde(rename = "water")]
     Water {},
+
+    #[serde(rename = "light")]
+    Light { emit: [f32; 3] },
 }
 
 impl MaterialDef {
@@ -157,15 +165,15 @@ impl MaterialDef {
 
         match self {
             MaterialDef::Lambertian { albedo } => Ok(Arc::new(Lambertian::new(Arc::new(
-                SolidColor::new(Vector3::new(albedo[0], albedo[1], albedo[2])),
+                SolidColor::new(Vector3::from(albedo)),
             )))),
             MaterialDef::Checkered { even, odd, scale } => {
                 let scale = scale.unwrap_or(1.0);
                 let even = even.unwrap_or([0.05, 0.05, 0.05]);
                 let odd = odd.unwrap_or([0.95, 0.95, 0.95]);
 
-                let even_color = SolidColor::new(Vector3::new(even[0], even[1], even[2]));
-                let odd_color = SolidColor::new(Vector3::new(odd[0], odd[1], odd[2]));
+                let even_color = SolidColor::new(Vector3::from(even));
+                let odd_color = SolidColor::new(Vector3::from(odd));
 
                 let checkered = Checkered::new(scale, Arc::new(even_color), Arc::new(odd_color));
                 Ok(Arc::new(Lambertian::new(Arc::new(checkered))))
@@ -182,15 +190,17 @@ impl MaterialDef {
                     scale, turbulance,
                 )))))
             }
-            MaterialDef::Metal { albedo, roughness } => Ok(Arc::new(Metal::new(
-                Vector3::new(albedo[0], albedo[1], albedo[2]),
-                roughness,
-            ))),
+            MaterialDef::Metal { albedo, roughness } => {
+                Ok(Arc::new(Metal::new(Vector3::from(albedo), roughness)))
+            }
             MaterialDef::Dielectric { refraction_index } => {
                 Ok(Arc::new(Dielectric::new(refraction_index)))
             }
             MaterialDef::Glass {} => Ok(Arc::new(Dielectric::new(1.5))),
             MaterialDef::Water {} => Ok(Arc::new(Dielectric::new(1.33))),
+            MaterialDef::Light { emit } => Ok(Arc::new(Light::new(Arc::new(SolidColor::new(
+                Vector3::from(emit),
+            ))))),
         }
     }
 }
@@ -207,13 +217,35 @@ struct RawSphere {
 
 impl RawSphere {
     fn into_sphere(self) -> Result<Sphere, Box<dyn Error>> {
-        let center = Vector3::new(self.center[0], self.center[1], self.center[2]);
+        let center = Vector3::from(self.center);
         let direction = match self.direction {
-            None => Vector3::new(0.0, 0.0, 0.0),
-            Some(direction) => Vector3::new(direction[0], direction[1], direction[2]),
+            None => Vector3::default(),
+            Some(direction) => Vector3::from(direction),
         };
         let material = self.material_def.into_material()?;
         Ok(Sphere::new(center, direction, self.radius, material))
+    }
+}
+
+#[derive(Deserialize)]
+struct RawQuad {
+    position: [f32; 3],
+    u: [f32; 3],
+    v: [f32; 3],
+
+    #[serde(flatten)]
+    material_def: MaterialDef,
+}
+
+impl RawQuad {
+    fn into_quad(self) -> Result<Quad, Box<dyn Error>> {
+        let material = self.material_def.into_material()?;
+        Ok(Quad::new(
+            Vector3::from(self.position),
+            Vector3::from(self.u),
+            Vector3::from(self.v),
+            material,
+        ))
     }
 }
 
@@ -222,11 +254,14 @@ impl RawSphere {
 enum ObjectDef {
     #[serde(rename = "sphere")]
     Sphere(RawSphere),
+    #[serde(rename = "quad")]
+    Quad(RawQuad),
 }
 
 #[derive(Debug)]
 pub enum Object {
     Sphere(Sphere),
+    Quad(Quad),
 }
 
 impl<'de> Deserialize<'de> for Object {
@@ -237,6 +272,9 @@ impl<'de> Deserialize<'de> for Object {
         match ObjectDef::deserialize(deserializer)? {
             ObjectDef::Sphere(raw) => Ok(Object::Sphere(
                 raw.into_sphere().map_err(serde::de::Error::custom)?,
+            )),
+            ObjectDef::Quad(raw) => Ok(Object::Quad(
+                raw.into_quad().map_err(serde::de::Error::custom)?,
             )),
         }
     }

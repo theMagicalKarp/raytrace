@@ -27,7 +27,7 @@ impl Material for Dielectric {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool {
-        attenuation.copy_from(&Vector3::new(1.0, 1.0, 1.0));
+        attenuation.copy_from(&Vector3::from_element(1.0));
         let r_index = match record.front_face {
             true => 1.0 / self.refraction_index,
             false => self.refraction_index,
@@ -50,5 +50,9 @@ impl Material for Dielectric {
         };
 
         true
+    }
+
+    fn emitted(&self, _: f32, _: f32, _: Vector3<f32>) -> Vector3<f32> {
+        Vector3::<f32>::default()
     }
 }
