@@ -8,6 +8,7 @@ fov = 20.0
 look_from = [13.0, 2.0, 3.0]
 look_at = [0.0, 0.0, 0.0]
 vup = [0.0, 1.0, 0.0]
+background = [0.70, 0.80, 0.99]
 
 [[objects]]
 shape = "sphere"

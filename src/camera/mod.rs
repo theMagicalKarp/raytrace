@@ -29,6 +29,8 @@ pub struct Camera {
     pub defocus_disk_u: Vector3<f32>,
     pub defocus_disk_v: Vector3<f32>,
     pub defocus_angle: f32,
+
+    pub background: Vector3<f32>,
 }
 
 fn random_in_unit_disk() -> Vector3<f32> {
@@ -58,42 +60,15 @@ fn degrees_to_radians(degress: f32) -> f32 {
     degress * PI / 180.0
 }
 
-pub fn ray_color(ray: &Ray, depth: u32, world: Arc<dyn Hittable>) -> Vector3<f32> {
-    if depth == 0 {
-        return Vector3::default();
-    }
-
-    let mut hit_record = HitRecord::default();
-    let interval = Interval::new(0.001, f32::INFINITY);
-
-    if world.hit(ray, &interval, &mut hit_record) {
-        let mut scattered = Ray::default();
-        let mut attenuation = Vector3::<f32>::default();
-
-        if hit_record
-            .material
-            .scatter(ray, &hit_record, &mut attenuation, &mut scattered)
-        {
-            return attenuation.component_mul(&ray_color(&scattered, depth - 1, world));
-        }
-
-        return Vector3::default();
-    }
-
-    let unit_direction = ray.direction.normalize();
-    let a = 0.5 * (unit_direction.y + 1.0);
-
-    Vector3::new(1.0 - a, 1.0 - a, 1.0 - a) + Vector3::new(0.5, 0.7, 1.0) * a
-}
-
 impl Camera {
     pub fn new(options: CameraOptions) -> Self {
         let (image_width, image_height) = options.get_dimensions();
 
-        let look_from = Vector3::from_iterator(options.look_from.iter().copied());
-        let look_at = Vector3::from_iterator(options.look_at.iter().copied());
-        let center = Vector3::from_iterator(options.look_from.iter().copied());
-        let vup = Vector3::from_iterator(options.vup.iter().copied());
+        let background = Vector3::from(options.background);
+        let look_from = Vector3::from(options.look_from);
+        let look_at = Vector3::from(options.look_at);
+        let center = Vector3::from(options.look_from);
+        let vup = Vector3::from(options.vup);
 
         let fov = options.fov;
         let theta = degrees_to_radians(fov);
@@ -144,6 +119,7 @@ impl Camera {
             defocus_disk_u,
             defocus_disk_v,
             defocus_angle,
+            background,
         }
     }
 
@@ -186,7 +162,7 @@ impl Camera {
         let mut color = Vector3::default();
         for _ in 0..self.samples {
             let r = self.get_ray(x, y);
-            color += ray_color(&r, self.max_bounces, world.clone());
+            color += self.ray_color(&r, self.max_bounces, world.clone());
         }
 
         color *= self.samples_scale;
@@ -220,5 +196,37 @@ impl Camera {
     pub fn defocus_disk_sample(&self) -> Vector3<f32> {
         let p = random_in_unit_disk();
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
+    }
+
+    pub fn ray_color(&self, ray: &Ray, depth: u32, world: Arc<dyn Hittable>) -> Vector3<f32> {
+        if depth == 0 {
+            return Vector3::default();
+        }
+
+        let mut hit_record = HitRecord::default();
+        let interval = Interval::new(0.001, f32::INFINITY);
+
+        if !world.hit(ray, &interval, &mut hit_record) {
+            return self.background;
+        }
+
+        let mut scattered = Ray::default();
+        let mut attenuation = Vector3::<f32>::default();
+        let color_from_emission =
+            hit_record
+                .material
+                .emitted(hit_record.u, hit_record.v, hit_record.point);
+
+        if !hit_record
+            .material
+            .scatter(ray, &hit_record, &mut attenuation, &mut scattered)
+        {
+            return color_from_emission;
+        }
+
+        let color_from_scatter =
+            attenuation.component_mul(&self.ray_color(&scattered, depth - 1, world));
+
+        color_from_emission + color_from_scatter
     }
 }

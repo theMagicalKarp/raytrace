@@ -19,6 +19,18 @@ impl Interval {
         self.max - self.min
     }
 
+    pub fn expand(&self, delta: f32) -> Self {
+        let padding = delta / 2.0;
+        Interval {
+            min: self.min - padding,
+            max: self.max + padding,
+        }
+    }
+
+    pub fn contains(&self, x: f32) -> bool {
+        self.min <= x && x <= self.max
+    }
+
     pub fn clamp(&self, value: f32) -> f32 {
         if value < self.min {
             self.min

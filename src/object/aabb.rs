@@ -31,6 +31,12 @@ pub struct Aabb {
 }
 
 impl Aabb {
+    pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
+        let mut value = Aabb { x, y, z };
+        value.pad_to_minimums();
+        value
+    }
+
     pub fn from_points(a: Vector3<f32>, b: Vector3<f32>) -> Self {
         let x = match a.x <= b.x {
             true => Interval::new(a.x, b.x),
@@ -44,14 +50,14 @@ impl Aabb {
             true => Interval::new(a.z, b.z),
             false => Interval::new(b.z, a.z),
         };
-        Aabb { x, y, z }
+        Aabb::new(x, y, z)
     }
 
     pub fn from_boxes(a: &Aabb, b: &Aabb) -> Self {
         let x = Interval::combine(a.x, b.x);
         let y = Interval::combine(a.y, b.y);
         let z = Interval::combine(a.z, b.z);
-        Aabb { x, y, z }
+        Aabb::new(x, y, z)
     }
 
     pub fn axis_interval(&self, axis: &Axis) -> Interval {
@@ -100,5 +106,18 @@ impl Aabb {
         }
 
         true
+    }
+
+    pub fn pad_to_minimums(&mut self) {
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
+        }
     }
 }

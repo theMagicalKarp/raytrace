@@ -35,7 +35,7 @@ impl Sphere {
         material: Arc<dyn Material>,
     ) -> Self {
         let center = Ray::new(center, direction, 0.0);
-        let rvec = Vector3::new(radius, radius, radius);
+        let rvec = Vector3::from_element(radius);
         let bbox = Aabb::from_boxes(
             &Aabb::from_points(center.at(0.0) - rvec, center.at(0.0) + rvec),
             &Aabb::from_points(center.at(1.0) - rvec, center.at(1.0) + rvec),

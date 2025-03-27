@@ -64,6 +64,7 @@ fn main() {
     for object in config.objects {
         match object {
             Object::Sphere(sphere) => objects.push(Arc::new(sphere)),
+            Object::Quad(quad) => objects.push(Arc::new(quad)),
         }
     }
 
