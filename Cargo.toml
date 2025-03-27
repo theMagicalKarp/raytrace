@@ -16,5 +16,8 @@ serde-inline-default = "0.2.3"
 threadpool = "1.8.1"
 toml = "0.8.20"
 
-[profile.dev]
-opt-level = 3
+# [profile.dev]
+# opt-level = 3
+
+[profile.release]
+debug = true
