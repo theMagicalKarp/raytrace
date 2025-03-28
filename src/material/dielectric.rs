@@ -1,25 +1,26 @@
+use crate::geometry::HitRecord;
 use crate::material::Material;
+use crate::material::Surface;
 use crate::math::reflect;
 use crate::math::reflectance;
 use crate::math::refract;
-use crate::object::hittable::HitRecord;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use rand::prelude::*;
 use std::fmt::Debug;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dielectric {
     pub refraction_index: f32,
 }
 
 impl Dielectric {
-    pub fn new(refraction_index: f32) -> Self {
-        Dielectric { refraction_index }
+    pub fn material(refraction_index: f32) -> Material {
+        Material::Dielectric(Dielectric { refraction_index })
     }
 }
 
-impl Material for Dielectric {
+impl Surface for Dielectric {
     fn scatter(
         &self,
         r_in: &Ray,

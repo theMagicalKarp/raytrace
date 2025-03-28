@@ -1,3 +1,5 @@
+use crate::geometry::quad::Quad;
+use crate::geometry::sphere::Sphere;
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
@@ -7,8 +9,6 @@ use crate::material::texture::Checkered;
 use crate::material::texture::Image;
 use crate::material::texture::Noise;
 use crate::material::texture::SolidColor;
-use crate::object::quad::Quad;
-use crate::object::sphere::Sphere;
 use clap::Parser;
 use colored::Colorize;
 use image::ImageReader;
@@ -19,7 +19,6 @@ use std::error::Error;
 use std::fmt;
 use std::ops::Range;
 use std::path::PathBuf;
-use std::sync::Arc;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -156,7 +155,7 @@ enum MaterialDef {
 }
 
 impl MaterialDef {
-    fn into_material(self) -> Result<Arc<dyn Material>, Box<dyn Error>> {
+    fn into_material(self) -> Result<Material, Box<dyn Error>> {
         let args = Args::parse();
         let config_dir = args
             .config
@@ -164,43 +163,42 @@ impl MaterialDef {
             .ok_or("Failed to get parent directory")?;
 
         match self {
-            MaterialDef::Lambertian { albedo } => Ok(Arc::new(Lambertian::new(Arc::new(
-                SolidColor::new(Vector3::from(albedo)),
-            )))),
+            MaterialDef::Lambertian { albedo } => Ok(Lambertian::material(SolidColor::texture(
+                Vector3::new(albedo[0], albedo[1], albedo[2]),
+            ))),
             MaterialDef::Checkered { even, odd, scale } => {
                 let scale = scale.unwrap_or(1.0);
                 let even = even.unwrap_or([0.05, 0.05, 0.05]);
                 let odd = odd.unwrap_or([0.95, 0.95, 0.95]);
 
-                let even_color = SolidColor::new(Vector3::from(even));
-                let odd_color = SolidColor::new(Vector3::from(odd));
+                let even_color = Vector3::new(even[0], even[1], even[2]);
+                let odd_color = Vector3::new(odd[0], odd[1], odd[2]);
 
-                let checkered = Checkered::new(scale, Arc::new(even_color), Arc::new(odd_color));
-                Ok(Arc::new(Lambertian::new(Arc::new(checkered))))
+                let checkered = Checkered::texture(scale, even_color, odd_color);
+                Ok(Lambertian::material(checkered))
             }
             MaterialDef::Texture { file } => {
                 let texture_path = config_dir.join(file);
                 let buffer = ImageReader::open(texture_path)?.decode()?.to_rgb8();
-                Ok(Arc::new(Lambertian::new(Arc::new(Image::new(buffer)))))
+                let image = Image::texture(buffer);
+                Ok(Lambertian::material(image))
             }
             MaterialDef::Noise { scale, turbulance } => {
                 let scale = scale.unwrap_or(1.0);
                 let turbulance = turbulance.unwrap_or(1);
-                Ok(Arc::new(Lambertian::new(Arc::new(Noise::new(
-                    scale, turbulance,
-                )))))
+                Ok(Lambertian::material(Noise::texture(scale, turbulance)))
             }
             MaterialDef::Metal { albedo, roughness } => {
-                Ok(Arc::new(Metal::new(Vector3::from(albedo), roughness)))
+                Ok(Metal::material(Vector3::from(albedo), roughness))
             }
             MaterialDef::Dielectric { refraction_index } => {
-                Ok(Arc::new(Dielectric::new(refraction_index)))
+                Ok(Dielectric::material(refraction_index))
             }
-            MaterialDef::Glass {} => Ok(Arc::new(Dielectric::new(1.5))),
-            MaterialDef::Water {} => Ok(Arc::new(Dielectric::new(1.33))),
-            MaterialDef::Light { emit } => Ok(Arc::new(Light::new(Arc::new(SolidColor::new(
-                Vector3::from(emit),
-            ))))),
+            MaterialDef::Glass {} => Ok(Dielectric::material(1.5)),
+            MaterialDef::Water {} => Ok(Dielectric::material(1.33)),
+            MaterialDef::Light { emit } => {
+                Ok(Light::material(SolidColor::texture(Vector3::from(emit))))
+            }
         }
     }
 }

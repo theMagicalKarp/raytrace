@@ -1,13 +1,16 @@
 use crate::config::CameraOptions;
+use crate::geometry::Geometry;
+use crate::geometry::HitRecord;
+use crate::geometry::Hittable;
 use crate::interval::Interval;
+use crate::material::Surface;
 use crate::math;
-use crate::object::hittable::HitRecord;
-use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 use image::RgbImage;
 use nalgebra::Vector3;
 use rand::prelude::*;
 use std::f32::consts::PI;
+use std::io::{self, Write};
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 use threadpool::ThreadPool;
@@ -123,17 +126,17 @@ impl Camera {
         }
     }
 
-    pub fn render(&self, world: Arc<dyn Hittable>) -> RgbImage {
+    pub fn render(&self, world: &Geometry) -> RgbImage {
         let pool = ThreadPool::new(self.threads);
         let (tx, rx) = channel();
-
+        let world = Arc::new(world.clone());
         for y in 0..self.image_height {
             for x in 0..self.image_width {
                 let tx = tx.clone();
                 let camera = *self;
                 let world = Arc::clone(&world);
                 pool.execute(move || {
-                    tx.send((x, y, camera.get_pixel(world, x, y)))
+                    tx.send((x, y, camera.get_pixel(&world, x, y)))
                         .expect("Failed to send result");
                 });
             }
@@ -142,27 +145,34 @@ impl Camera {
         drop(tx);
         let mut image = RgbImage::new(self.image_width, self.image_height);
         let total = self.image_width * self.image_height;
-        let print_at = (total as f32 * 0.05) as usize;
         let is_tty = atty::is(atty::Stream::Stdout);
+        let print_at = match is_tty {
+            true => (total as f32 * 0.01) as usize,
+            false => (total as f32 * 0.05) as usize,
+        };
         for (i, (x, y, pixel)) in rx.iter().enumerate() {
-            let percent = (x + y * self.image_width) * 100 / (total);
-            let msg = format!("Rendering: {:3}% ({}/{})", percent, i, total);
-            if is_tty {
-                print!("{}\r", msg);
-            } else if i % print_at == 0 {
-                println!("{}", msg);
+            if i % print_at == 0 {
+                let percent = (x + y * self.image_width) * 100 / (total);
+                let msg = format!("Rendering: {:3}% ({}/{})", percent, i, total);
+                if is_tty {
+                    print!("{}\r", msg);
+                    io::stdout().flush().expect("Flush to STDOUT failed");
+                } else {
+                    println!("{}", msg);
+                }
             }
+
             image.put_pixel(x, y, pixel);
         }
         println!("Rendering: 100% ({}/{})", total, total);
         image
     }
 
-    pub fn get_pixel(&self, world: Arc<dyn Hittable>, x: u32, y: u32) -> image::Rgb<u8> {
+    pub fn get_pixel(&self, world: &Geometry, x: u32, y: u32) -> image::Rgb<u8> {
         let mut color = Vector3::default();
         for _ in 0..self.samples {
             let r = self.get_ray(x, y);
-            color += self.ray_color(&r, self.max_bounces, world.clone());
+            color += self.ray_color(&r, self.max_bounces, world);
         }
 
         color *= self.samples_scale;
@@ -198,7 +208,7 @@ impl Camera {
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
-    pub fn ray_color(&self, ray: &Ray, depth: u32, world: Arc<dyn Hittable>) -> Vector3<f32> {
+    pub fn ray_color(&self, ray: &Ray, depth: u32, world: &Geometry) -> Vector3<f32> {
         if depth == 0 {
             return Vector3::default();
         }

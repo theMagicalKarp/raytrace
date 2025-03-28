@@ -1,24 +1,25 @@
+use crate::geometry::HitRecord;
 use crate::material::Material;
+use crate::material::Surface;
 use crate::math;
 use crate::math::reflect;
-use crate::object::hittable::HitRecord;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use std::fmt::Debug;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Metal {
     pub albedo: Vector3<f32>,
     pub roughness: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Vector3<f32>, roughness: f32) -> Self {
-        Metal { albedo, roughness }
+    pub fn material(albedo: Vector3<f32>, roughness: f32) -> Material {
+        Material::Metal(Metal { albedo, roughness })
     }
 }
 
-impl Material for Metal {
+impl Surface for Metal {
     fn scatter(
         &self,
         r_in: &Ray,

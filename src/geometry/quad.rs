@@ -1,35 +1,25 @@
+use crate::geometry::HitRecord;
+use crate::geometry::Hittable;
+use crate::geometry::aabb::Aabb;
 use crate::interval::Interval;
 use crate::material::Material;
-use crate::object::aabb::Aabb;
-use crate::object::hittable::HitRecord;
-use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-use std::marker::Sync;
-use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Quad {
     pub q: Vector3<f32>,
     pub u: Vector3<f32>,
     pub v: Vector3<f32>,
-    pub material: Arc<dyn Material>,
+    pub material: Material,
     pub bbox: Aabb,
     pub normal: Vector3<f32>,
     pub d: f32,
     pub w: Vector3<f32>,
 }
 
-unsafe impl Sync for Quad {}
-unsafe impl Send for Quad {}
-
 impl Quad {
-    pub fn new(
-        q: Vector3<f32>,
-        u: Vector3<f32>,
-        v: Vector3<f32>,
-        material: Arc<dyn Material>,
-    ) -> Self {
+    pub fn new(q: Vector3<f32>, u: Vector3<f32>, v: Vector3<f32>, material: Material) -> Self {
         let n = u.cross(&v);
         let normal = n.normalize();
         let d = normal.dot(&q);
@@ -88,7 +78,7 @@ impl Hittable for Quad {
 
         record.t = t;
         record.point = intersection;
-        record.material = Arc::clone(&self.material);
+        record.material = self.material.clone();
         record.set_face_normal(r, &self.normal);
 
         true

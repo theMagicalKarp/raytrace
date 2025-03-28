@@ -1,24 +1,19 @@
+use crate::geometry::HitRecord;
+use crate::geometry::Hittable;
+use crate::geometry::aabb::Aabb;
 use crate::interval::Interval;
 use crate::material::Material;
-use crate::object::aabb::Aabb;
-use crate::object::hittable::HitRecord;
-use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use std::f32::consts::PI;
-use std::marker::Sync;
-use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Sphere {
     pub center: Ray,
     pub radius: f32,
-    pub material: Arc<dyn Material>,
+    pub material: Material,
     pub bbox: Aabb,
 }
-
-unsafe impl Sync for Sphere {}
-unsafe impl Send for Sphere {}
 
 pub fn get_sphere_uv(point: Vector3<f32>) -> (f32, f32) {
     let theta = point.y.acos();
@@ -32,8 +27,8 @@ impl Sphere {
         center: Vector3<f32>,
         direction: Vector3<f32>,
         radius: f32,
-        material: Arc<dyn Material>,
-    ) -> Self {
+        material: Material,
+    ) -> Sphere {
         let center = Ray::new(center, direction, 0.0);
         let rvec = Vector3::from_element(radius);
         let bbox = Aabb::from_boxes(
@@ -77,7 +72,7 @@ impl Hittable for Sphere {
         record.point = r.at(root);
         let outward_normal = (record.point - current_center) / self.radius;
         record.set_face_normal(r, &outward_normal);
-        record.material = Arc::clone(&self.material);
+        record.material = self.material.clone();
         (record.u, record.v) = get_sphere_uv(outward_normal);
 
         true
