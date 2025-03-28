@@ -1,10 +1,10 @@
 mod camera;
 mod config;
+mod geometry;
 mod interval;
 mod material;
 mod math;
 mod noise;
-mod object;
 mod ray;
 
 use camera::Camera;
@@ -14,10 +14,9 @@ use config::Args;
 use config::Config;
 use config::Object;
 use config::span_dump;
-use object::bvh::BvhNode;
-use object::hittable::Hittable;
+use geometry::Geometry;
+use geometry::bvh::BvhNode;
 use std::fs;
-use std::sync::Arc;
 
 fn main() {
     let args = Args::parse();
@@ -59,18 +58,18 @@ fn main() {
     println!("{}", config);
 
     let camera = Camera::new(config.camera);
-    let mut objects = Vec::<Arc<dyn Hittable>>::new();
+    let mut objects = Vec::<Geometry>::new();
 
     for object in config.objects {
         match object {
-            Object::Sphere(sphere) => objects.push(Arc::new(sphere)),
-            Object::Quad(quad) => objects.push(Arc::new(quad)),
+            Object::Sphere(sphere) => objects.push(Geometry::Sphere(sphere)),
+            Object::Quad(quad) => objects.push(Geometry::Quad(quad)),
         }
     }
 
-    let world = BvhNode::new(objects);
+    let world = BvhNode::geometry(objects);
 
-    match camera.render(Arc::new(world)).save(args.output) {
+    match camera.render(&world).save(args.output) {
         Ok(_) => println!("Image saved successfully."),
         Err(e) => println!("Error saving image: {}", e),
     }

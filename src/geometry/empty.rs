@@ -1,10 +1,18 @@
+use crate::geometry::Geometry;
+use crate::geometry::HitRecord;
+use crate::geometry::Hittable;
+use crate::geometry::aabb::Aabb;
 use crate::interval::Interval;
-use crate::object::aabb::Aabb;
-use crate::object::hittable::HitRecord;
-use crate::object::hittable::Hittable;
 use crate::ray::Ray;
 
+#[derive(Debug, Clone)]
 pub struct Empty {}
+
+impl Empty {
+    pub fn geometry() -> Geometry {
+        Geometry::Empty(Empty {})
+    }
+}
 
 impl Hittable for Empty {
     fn hit(&self, _: &Ray, _: &Interval, _: &mut HitRecord) -> bool {

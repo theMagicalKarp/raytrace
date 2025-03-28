@@ -1,19 +1,20 @@
+use crate::geometry::Geometry;
+use crate::geometry::HitRecord;
+use crate::geometry::Hittable;
+use crate::geometry::aabb::Aabb;
+use crate::geometry::empty::Empty;
 use crate::interval::Interval;
-use crate::object::aabb::Aabb;
-use crate::object::empty::Empty;
-use crate::object::hittable::HitRecord;
-use crate::object::hittable::Hittable;
 use crate::ray::Ray;
-use std::sync::Arc;
 
+#[derive(Debug, Clone)]
 pub struct BvhNode {
-    left: Arc<dyn Hittable>,
-    right: Arc<dyn Hittable>,
+    left: Box<Geometry>,
+    right: Box<Geometry>,
     bbox: Aabb,
 }
 
 impl BvhNode {
-    pub fn new(objects: Vec<Arc<dyn Hittable>>) -> Self {
+    pub fn geometry(objects: Vec<Geometry>) -> Geometry {
         let mut bbox = Aabb::default();
         for object in objects.iter() {
             bbox = Aabb::from_boxes(&bbox, &object.bounding_box());
@@ -32,19 +33,21 @@ impl BvhNode {
 
         let (left_objects, right_objects) = objects.split_at(mid);
 
-        let left: Arc<dyn Hittable> = match left_objects.len() {
-            0 => Arc::new(Empty {}),
+        let left: Geometry = match left_objects.len() {
+            0 => Empty::geometry(),
             1 => left_objects[0].clone(),
-            _ => Arc::new(BvhNode::new(left_objects.to_vec())),
+            _ => BvhNode::geometry(left_objects.to_vec()),
         };
+        let left = Box::new(left);
 
-        let right: Arc<dyn Hittable> = match right_objects.len() {
-            0 => Arc::new(Empty {}),
+        let right: Geometry = match right_objects.len() {
+            0 => Empty::geometry(),
             1 => right_objects[0].clone(),
-            _ => Arc::new(BvhNode::new(right_objects.to_vec())),
+            _ => BvhNode::geometry(right_objects.to_vec()),
         };
+        let right = Box::new(right);
 
-        BvhNode { left, right, bbox }
+        Geometry::BvhNode(BvhNode { left, right, bbox })
     }
 }
 

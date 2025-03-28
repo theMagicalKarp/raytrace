@@ -4,12 +4,12 @@ use rand::prelude::*;
 
 const PERLIN_POINT_COUNT: usize = 256;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Perlin {
-    randvec: [Vector3<f32>; PERLIN_POINT_COUNT],
-    perm_x: [usize; PERLIN_POINT_COUNT],
-    perm_y: [usize; PERLIN_POINT_COUNT],
-    perm_z: [usize; PERLIN_POINT_COUNT],
+    randvec: Box<[Vector3<f32>; PERLIN_POINT_COUNT]>,
+    perm_x: Box<[usize; PERLIN_POINT_COUNT]>,
+    perm_y: Box<[usize; PERLIN_POINT_COUNT]>,
+    perm_z: Box<[usize; PERLIN_POINT_COUNT]>,
 }
 
 impl Default for Perlin {
@@ -31,17 +31,17 @@ impl Perlin {
             .normalize();
         }
 
-        let mut perm_x = [0; PERLIN_POINT_COUNT];
+        let mut perm_x = Box::new([0; PERLIN_POINT_COUNT]);
         Perlin::perlin_generate_perm(&mut perm_x);
 
-        let mut perm_y = [0; PERLIN_POINT_COUNT];
+        let mut perm_y = Box::new([0; PERLIN_POINT_COUNT]);
         Perlin::perlin_generate_perm(&mut perm_y);
 
-        let mut perm_z = [0; PERLIN_POINT_COUNT];
+        let mut perm_z = Box::new([0; PERLIN_POINT_COUNT]);
         Perlin::perlin_generate_perm(&mut perm_z);
 
         Perlin {
-            randvec,
+            randvec: Box::new(randvec),
             perm_x,
             perm_y,
             perm_z,
