@@ -1,3 +1,4 @@
+use crate::geometry::Geometry;
 use crate::geometry::HitRecord;
 use crate::geometry::Hittable;
 use crate::geometry::aabb::Aabb;
@@ -41,6 +42,15 @@ impl Sphere {
             material,
             bbox,
         }
+    }
+
+    pub fn geometry(
+        center: Vector3<f32>,
+        direction: Vector3<f32>,
+        radius: f32,
+        material: Material,
+    ) -> Geometry {
+        Geometry::Sphere(Sphere::new(center, direction, radius, material))
     }
 }
 

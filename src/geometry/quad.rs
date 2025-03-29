@@ -6,6 +6,8 @@ use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 
+use super::Geometry;
+
 #[derive(Debug, Clone)]
 pub struct Quad {
     pub q: Vector3<f32>,
@@ -38,6 +40,14 @@ impl Quad {
             d,
             w,
         }
+    }
+    pub fn geomtry(
+        q: Vector3<f32>,
+        u: Vector3<f32>,
+        v: Vector3<f32>,
+        material: Material,
+    ) -> Geometry {
+        Geometry::Quad(Quad::new(q, u, v, material))
     }
 }
 

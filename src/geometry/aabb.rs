@@ -1,27 +1,9 @@
+use crate::geometry::axis::Axis;
 use crate::interval::Interval;
 use crate::ray::Ray;
+use itertools::iproduct;
 use nalgebra::Vector3;
-
-#[derive(Clone)]
-pub enum Axis {
-    X = 0,
-    Y = 1,
-    Z = 2,
-}
-
-impl Axis {
-    pub fn as_index(&self) -> usize {
-        self.clone() as usize
-    }
-
-    pub fn compare_bboxes(&self, a: &Aabb, b: &Aabb) -> Option<std::cmp::Ordering> {
-        match self {
-            Axis::X => a.x.partial_cmp(&b.x),
-            Axis::Y => a.y.partial_cmp(&b.y),
-            Axis::Z => a.z.partial_cmp(&b.z),
-        }
-    }
-}
+use std::ops::Add;
 
 #[derive(Default, Debug, Clone)]
 pub struct Aabb {
@@ -119,5 +101,21 @@ impl Aabb {
         if self.z.size() < delta {
             self.z = self.z.expand(delta);
         }
+    }
+
+    pub fn vertices(&self) -> impl Iterator<Item = Vector3<f32>> {
+        iproduct!(
+            [self.x.max, self.x.min].into_iter(),
+            [self.y.max, self.y.min].into_iter(),
+            [self.z.max, self.z.min].into_iter()
+        )
+        .map(|(x, y, z)| Vector3::new(x, y, z))
+    }
+}
+
+impl Add<Vector3<f32>> for Aabb {
+    type Output = Self;
+    fn add(self, offset: Vector3<f32>) -> Self::Output {
+        Aabb::new(self.x + offset.x, self.y + offset.y, self.z + offset.z)
     }
 }

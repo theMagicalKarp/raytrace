@@ -12,9 +12,7 @@ use clap::Parser;
 use colored::Colorize;
 use config::Args;
 use config::Config;
-use config::Object;
 use config::span_dump;
-use geometry::Geometry;
 use geometry::bvh::BvhNode;
 use std::fs;
 
@@ -58,16 +56,7 @@ fn main() {
     println!("{}", config);
 
     let camera = Camera::new(config.camera);
-    let mut objects = Vec::<Geometry>::new();
-
-    for object in config.objects {
-        match object {
-            Object::Sphere(sphere) => objects.push(Geometry::Sphere(sphere)),
-            Object::Quad(quad) => objects.push(Geometry::Quad(quad)),
-        }
-    }
-
-    let world = BvhNode::geometry(objects);
+    let world = BvhNode::geometry(config.objects);
 
     match camera.render(&world).save(args.output) {
         Ok(_) => println!("Image saved successfully."),
