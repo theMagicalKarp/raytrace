@@ -1,21 +1,25 @@
 pub mod aabb;
+pub mod axis;
 pub mod bvh;
+pub mod cube;
 pub mod empty;
 pub mod quad;
+pub mod rotate;
 pub mod sphere;
-
-use crate::interval::Interval;
-use crate::material::Material;
-
-use crate::material::lambertian::Lambertian;
-use crate::material::texture::SolidColor;
-
-use crate::geometry::empty::Empty;
+pub mod translate;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::bvh::BvhNode;
+use crate::geometry::cube::Cube;
+use crate::geometry::empty::Empty;
 use crate::geometry::quad::Quad;
+use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
+use crate::geometry::translate::Translate;
+use crate::interval::Interval;
+use crate::material::Material;
+use crate::material::lambertian::Lambertian;
+use crate::material::texture::SolidColor;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 
@@ -30,6 +34,9 @@ pub enum Geometry {
     Quad(Quad),
     Sphere(Sphere),
     BvhNode(BvhNode),
+    Cube(Cube),
+    Translate(Translate),
+    Rotate(Rotate),
 }
 
 impl Hittable for Geometry {
@@ -39,6 +46,9 @@ impl Hittable for Geometry {
             Geometry::Quad(geomtry) => geomtry.hit(ray, interval, record),
             Geometry::Sphere(geomtry) => geomtry.hit(ray, interval, record),
             Geometry::BvhNode(geomtry) => geomtry.hit(ray, interval, record),
+            Geometry::Cube(geomtry) => geomtry.hit(ray, interval, record),
+            Geometry::Translate(geomtry) => geomtry.hit(ray, interval, record),
+            Geometry::Rotate(geomtry) => geomtry.hit(ray, interval, record),
         }
     }
 
@@ -48,6 +58,9 @@ impl Hittable for Geometry {
             Geometry::Quad(geomtry) => geomtry.bounding_box(),
             Geometry::Sphere(geomtry) => geomtry.bounding_box(),
             Geometry::BvhNode(geomtry) => geomtry.bounding_box(),
+            Geometry::Cube(geomtry) => geomtry.bounding_box(),
+            Geometry::Translate(geomtry) => geomtry.bounding_box(),
+            Geometry::Rotate(geomtry) => geomtry.bounding_box(),
         }
     }
 }

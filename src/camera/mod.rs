@@ -169,15 +169,12 @@ impl Camera {
     }
 
     pub fn get_pixel(&self, world: &Geometry, x: u32, y: u32) -> image::Rgb<u8> {
-        let mut color = Vector3::default();
-        for _ in 0..self.samples {
-            let r = self.get_ray(x, y);
-            color += self.ray_color(&r, self.max_bounces, world);
-        }
+        let color = (0..self.samples)
+            .map(|_| self.ray_color(&self.get_ray(x, y), self.max_bounces, world))
+            .sum::<Vector3<f32>>()
+            * self.samples_scale;
 
-        color *= self.samples_scale;
         let intensity = Interval::new(0.0, 0.999);
-
         let r = intensity.clamp(linear_to_gamma(color.x)) * 256.0;
         let g = intensity.clamp(linear_to_gamma(color.y)) * 256.0;
         let b = intensity.clamp(linear_to_gamma(color.z)) * 256.0;

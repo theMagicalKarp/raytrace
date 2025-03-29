@@ -1,5 +1,10 @@
+use crate::geometry::Geometry;
+use crate::geometry::axis::Axis;
+use crate::geometry::cube::Cube;
 use crate::geometry::quad::Quad;
+use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
+use crate::geometry::translate::Translate;
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
@@ -204,6 +209,39 @@ impl MaterialDef {
 }
 
 #[derive(Deserialize)]
+struct RawTranslate {
+    offset: [f32; 3],
+}
+
+#[derive(Deserialize)]
+struct RawRotate {
+    degrees: f32,
+    axis: Axis,
+}
+
+#[derive(Deserialize)]
+#[serde(tag = "type")]
+enum Transform {
+    #[serde(rename = "translate")]
+    Translate(RawTranslate),
+    #[serde(rename = "rotate")]
+    Rotate(RawRotate),
+}
+
+impl Transform {
+    pub fn apply(&self, geomtry: Geometry) -> Geometry {
+        match self {
+            Transform::Translate(trans) => {
+                Translate::geometry(geomtry, Vector3::from(trans.offset))
+            }
+            Transform::Rotate(trans) => {
+                Rotate::geometry(geomtry, trans.axis.clone(), -trans.degrees)
+            }
+        }
+    }
+}
+
+#[derive(Deserialize)]
 struct RawSphere {
     #[serde(rename = "position")]
     center: [f32; 3],
@@ -211,17 +249,23 @@ struct RawSphere {
     radius: f32,
     #[serde(flatten)]
     material_def: MaterialDef,
+    #[serde(default)]
+    transform: Vec<Transform>,
 }
 
 impl RawSphere {
-    fn into_sphere(self) -> Result<Sphere, Box<dyn Error>> {
+    fn into_sphere(self) -> Result<Geometry, Box<dyn Error>> {
         let center = Vector3::from(self.center);
         let direction = match self.direction {
             None => Vector3::default(),
             Some(direction) => Vector3::from(direction),
         };
         let material = self.material_def.into_material()?;
-        Ok(Sphere::new(center, direction, self.radius, material))
+        let geometry = Sphere::geometry(center, direction, self.radius, material);
+        Ok(self
+            .transform
+            .into_iter()
+            .fold(geometry, |geom, transform| transform.apply(geom)))
     }
 }
 
@@ -233,17 +277,47 @@ struct RawQuad {
 
     #[serde(flatten)]
     material_def: MaterialDef,
+
+    #[serde(default)]
+    transform: Vec<Transform>,
 }
 
 impl RawQuad {
-    fn into_quad(self) -> Result<Quad, Box<dyn Error>> {
+    fn into_quad(self) -> Result<Geometry, Box<dyn Error>> {
         let material = self.material_def.into_material()?;
-        Ok(Quad::new(
+        let geometry = Quad::geomtry(
             Vector3::from(self.position),
             Vector3::from(self.u),
             Vector3::from(self.v),
             material,
-        ))
+        );
+        Ok(self
+            .transform
+            .into_iter()
+            .fold(geometry, |geom, transform| transform.apply(geom)))
+    }
+}
+
+#[derive(Deserialize)]
+struct RawCube {
+    a: [f32; 3],
+    b: [f32; 3],
+
+    #[serde(flatten)]
+    material_def: MaterialDef,
+
+    #[serde(default)]
+    transform: Vec<Transform>,
+}
+
+impl RawCube {
+    fn into_cube(self) -> Result<Geometry, Box<dyn Error>> {
+        let material = self.material_def.into_material()?;
+        let geometry = Cube::geometry(Vector3::from(self.a), Vector3::from(self.b), material);
+        Ok(self
+            .transform
+            .into_iter()
+            .fold(geometry, |geom, transform| transform.apply(geom)))
     }
 }
 
@@ -254,26 +328,19 @@ enum ObjectDef {
     Sphere(RawSphere),
     #[serde(rename = "quad")]
     Quad(RawQuad),
+    #[serde(rename = "cube")]
+    Cube(RawCube),
 }
 
-#[derive(Debug)]
-pub enum Object {
-    Sphere(Sphere),
-    Quad(Quad),
-}
-
-impl<'de> Deserialize<'de> for Object {
+impl<'de> Deserialize<'de> for Geometry {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         match ObjectDef::deserialize(deserializer)? {
-            ObjectDef::Sphere(raw) => Ok(Object::Sphere(
-                raw.into_sphere().map_err(serde::de::Error::custom)?,
-            )),
-            ObjectDef::Quad(raw) => Ok(Object::Quad(
-                raw.into_quad().map_err(serde::de::Error::custom)?,
-            )),
+            ObjectDef::Sphere(raw) => Ok(raw.into_sphere().map_err(serde::de::Error::custom)?),
+            ObjectDef::Quad(raw) => Ok(raw.into_quad().map_err(serde::de::Error::custom)?),
+            ObjectDef::Cube(raw) => Ok(raw.into_cube().map_err(serde::de::Error::custom)?),
         }
     }
 }
@@ -283,7 +350,7 @@ impl<'de> Deserialize<'de> for Object {
 pub struct Config {
     pub camera: CameraOptions,
     #[serde(default)]
-    pub objects: Vec<Object>,
+    pub objects: Vec<Geometry>,
 }
 
 impl fmt::Display for Config {

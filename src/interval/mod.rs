@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Interval {
     pub min: f32,
@@ -68,6 +70,16 @@ impl PartialOrd for Interval {
             Some(std::cmp::Ordering::Greater)
         } else {
             Some(std::cmp::Ordering::Equal)
+        }
+    }
+}
+
+impl Add<f32> for Interval {
+    type Output = Self;
+    fn add(self, offset: f32) -> Self::Output {
+        Interval {
+            min: self.min + offset,
+            max: self.max + offset,
         }
     }
 }

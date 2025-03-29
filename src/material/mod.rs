@@ -5,7 +5,6 @@ pub mod metal;
 pub mod texture;
 
 use crate::geometry::HitRecord;
-
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
 use crate::material::light::Light;

@@ -14,7 +14,7 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn geometry(objects: Vec<Geometry>) -> Geometry {
+    pub fn new(objects: Vec<Geometry>) -> BvhNode {
         let mut bbox = Aabb::default();
         for object in objects.iter() {
             bbox = Aabb::from_boxes(&bbox, &object.bounding_box());
@@ -47,7 +47,11 @@ impl BvhNode {
         };
         let right = Box::new(right);
 
-        Geometry::BvhNode(BvhNode { left, right, bbox })
+        BvhNode { left, right, bbox }
+    }
+
+    pub fn geometry(objects: Vec<Geometry>) -> Geometry {
+        Geometry::BvhNode(BvhNode::new(objects))
     }
 }
 
