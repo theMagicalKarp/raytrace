@@ -31,7 +31,7 @@ pub fn random_normal() -> Vector3<f32> {
 }
 
 pub fn near_zero(v: &Vector3<f32>) -> bool {
-    v.x.abs() < f32::EPSILON && v.y.abs() < f32::EPSILON && v.z.abs() < f32::EPSILON
+    v.x.abs() < 1e-8 && v.y.abs() < 1e-8 && v.z.abs() < 1e-8
 }
 
 pub fn reflect(a: &Vector3<f32>, n: &Vector3<f32>) -> Vector3<f32> {

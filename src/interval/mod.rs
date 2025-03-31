@@ -1,3 +1,4 @@
+use core::f32;
 use std::ops::Add;
 
 #[derive(Debug, Clone, Copy)]
@@ -9,6 +10,12 @@ pub struct Interval {
 impl Interval {
     pub fn new(min: f32, max: f32) -> Self {
         Self { min, max }
+    }
+
+    pub fn universe() -> Self {
+        let min = f32::NEG_INFINITY;
+        let max = f32::INFINITY;
+        Interval { min, max }
     }
 
     pub fn combine(a: Interval, b: Interval) -> Interval {

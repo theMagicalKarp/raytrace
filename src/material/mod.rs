@@ -1,4 +1,5 @@
 pub mod dielectric;
+pub mod isotropic;
 pub mod lambertian;
 pub mod light;
 pub mod metal;
@@ -6,6 +7,7 @@ pub mod texture;
 
 use crate::geometry::HitRecord;
 use crate::material::dielectric::Dielectric;
+use crate::material::isotropic::Isotropic;
 use crate::material::lambertian::Lambertian;
 use crate::material::light::Light;
 use crate::material::metal::Metal;
@@ -30,6 +32,7 @@ pub enum Material {
     Dielectric(Dielectric),
     Lambertian(Lambertian),
     Light(Light),
+    Isotropic(Isotropic),
 }
 
 impl Surface for Material {
@@ -49,6 +52,9 @@ impl Surface for Material {
                 material.scatter(ray_in, record, attenuation, scattered)
             }
             Material::Light(material) => material.scatter(ray_in, record, attenuation, scattered),
+            Material::Isotropic(material) => {
+                material.scatter(ray_in, record, attenuation, scattered)
+            }
         }
     }
     fn emitted(&self, u: f32, v: f32, p: Vector3<f32>) -> Vector3<f32> {
@@ -57,6 +63,7 @@ impl Surface for Material {
             Material::Dielectric(material) => material.emitted(u, v, p),
             Material::Lambertian(material) => material.emitted(u, v, p),
             Material::Light(material) => material.emitted(u, v, p),
+            Material::Isotropic(material) => material.emitted(u, v, p),
         }
     }
 }

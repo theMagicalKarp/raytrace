@@ -1,3 +1,4 @@
+use crate::geometry::Geometry;
 use crate::geometry::HitRecord;
 use crate::geometry::Hittable;
 use crate::geometry::aabb::Aabb;
@@ -5,8 +6,6 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-
-use super::Geometry;
 
 #[derive(Debug, Clone)]
 pub struct Quad {

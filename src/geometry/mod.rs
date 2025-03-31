@@ -7,6 +7,7 @@ pub mod quad;
 pub mod rotate;
 pub mod sphere;
 pub mod translate;
+pub mod volume;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::bvh::BvhNode;
@@ -16,6 +17,7 @@ use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
+use crate::geometry::volume::Volume;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::material::lambertian::Lambertian;
@@ -37,6 +39,7 @@ pub enum Geometry {
     Cube(Cube),
     Translate(Translate),
     Rotate(Rotate),
+    Volume(Volume),
 }
 
 impl Hittable for Geometry {
@@ -49,6 +52,7 @@ impl Hittable for Geometry {
             Geometry::Cube(geomtry) => geomtry.hit(ray, interval, record),
             Geometry::Translate(geomtry) => geomtry.hit(ray, interval, record),
             Geometry::Rotate(geomtry) => geomtry.hit(ray, interval, record),
+            Geometry::Volume(geomtry) => geomtry.hit(ray, interval, record),
         }
     }
 
@@ -61,6 +65,7 @@ impl Hittable for Geometry {
             Geometry::Cube(geomtry) => geomtry.bounding_box(),
             Geometry::Translate(geomtry) => geomtry.bounding_box(),
             Geometry::Rotate(geomtry) => geomtry.bounding_box(),
+            Geometry::Volume(geomtry) => geomtry.bounding_box(),
         }
     }
 }
