@@ -1,4 +1,5 @@
 use crate::geometry::BvhNode;
+use crate::geometry::Geometry;
 use crate::geometry::HitRecord;
 use crate::geometry::Hittable;
 use crate::geometry::Quad;
@@ -7,8 +8,6 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-
-use super::Geometry;
 
 #[derive(Debug, Clone)]
 pub struct Cube {
@@ -30,7 +29,7 @@ impl Cube {
             Quad::geomtry(Vector3::new(max.x, min.y, min.z), -dx, dy, material.clone()),
             Quad::geomtry(Vector3::new(min.x, min.y, min.z), dz, dy, material.clone()),
             Quad::geomtry(Vector3::new(min.x, max.y, max.z), dx, -dz, material.clone()),
-            Quad::geomtry(Vector3::new(min.x, min.y, min.z), dx, dy, material.clone()),
+            Quad::geomtry(Vector3::new(min.x, min.y, min.z), dx, dz, material.clone()),
         ];
 
         let children = Box::new(BvhNode::new(primitives.to_vec()));

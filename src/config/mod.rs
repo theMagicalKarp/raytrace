@@ -5,6 +5,7 @@ use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
+use crate::geometry::volume::Volume;
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
@@ -235,10 +236,16 @@ impl Transform {
                 Translate::geometry(geomtry, Vector3::from(trans.offset))
             }
             Transform::Rotate(trans) => {
-                Rotate::geometry(geomtry, trans.axis.clone(), -trans.degrees)
+                Rotate::geometry(geomtry, trans.axis.clone(), trans.degrees)
             }
         }
     }
+}
+
+#[derive(Deserialize)]
+struct RawVolume {
+    density: f32,
+    albedo: [f32; 3],
 }
 
 #[derive(Deserialize)]
@@ -251,6 +258,7 @@ struct RawSphere {
     material_def: MaterialDef,
     #[serde(default)]
     transform: Vec<Transform>,
+    volume: Option<RawVolume>,
 }
 
 impl RawSphere {
@@ -262,10 +270,22 @@ impl RawSphere {
         };
         let material = self.material_def.into_material()?;
         let geometry = Sphere::geometry(center, direction, self.radius, material);
-        Ok(self
+
+        let geometry = match self.volume {
+            Some(volume) => Volume::geometry(
+                geometry,
+                volume.density,
+                SolidColor::texture(Vector3::from(volume.albedo)),
+            ),
+            None => geometry,
+        };
+
+        let geometry = self
             .transform
             .into_iter()
-            .fold(geometry, |geom, transform| transform.apply(geom)))
+            .fold(geometry, |geom, transform| transform.apply(geom));
+
+        Ok(geometry)
     }
 }
 
@@ -274,10 +294,8 @@ struct RawQuad {
     position: [f32; 3],
     u: [f32; 3],
     v: [f32; 3],
-
     #[serde(flatten)]
     material_def: MaterialDef,
-
     #[serde(default)]
     transform: Vec<Transform>,
 }
@@ -302,22 +320,33 @@ impl RawQuad {
 struct RawCube {
     a: [f32; 3],
     b: [f32; 3],
-
     #[serde(flatten)]
     material_def: MaterialDef,
-
     #[serde(default)]
     transform: Vec<Transform>,
+    volume: Option<RawVolume>,
 }
 
 impl RawCube {
     fn into_cube(self) -> Result<Geometry, Box<dyn Error>> {
         let material = self.material_def.into_material()?;
         let geometry = Cube::geometry(Vector3::from(self.a), Vector3::from(self.b), material);
-        Ok(self
+
+        let geometry = match self.volume {
+            Some(volume) => Volume::geometry(
+                geometry,
+                volume.density,
+                SolidColor::texture(Vector3::from(volume.albedo)),
+            ),
+            None => geometry,
+        };
+
+        let geometry = self
             .transform
             .into_iter()
-            .fold(geometry, |geom, transform| transform.apply(geom)))
+            .fold(geometry, |geom, transform| transform.apply(geom));
+
+        Ok(geometry)
     }
 }
 

@@ -1,0 +1,109 @@
+[camera]
+aspect_ratio = "square"
+image_width = 600
+samples = 200
+max_bounces = 50
+threads = 4
+fov = 40
+look_from = [278.0, 278.0, -800.0]
+look_at = [278.0, 278.0, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+# Left Wall
+[[objects]]
+shape = "quad"
+position = [555.0, 0.0, 0.0]
+u = [0.0, 555.0, 0.0]
+v = [0.0, 0.0, 555.0]
+material = "lambertian"
+albedo = [0.12, 0.45, 0.15]
+
+# Right Wall
+[[objects]]
+shape = "quad"
+position = [0.0, 0.0, 0.0]
+u = [0.0, 555.0, 0.0]
+v = [0.0, 0.0, 555.0]
+material = "lambertian"
+albedo = [0.65, 0.05, 0.05]
+
+# Floor
+[[objects]]
+shape = "quad"
+position = [0.0, 0.0, 0.0]
+u = [555.0, 0.0, 0.0]
+v = [0.0, 0.0, 555.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+
+# Ceiling
+[[objects]]
+shape = "quad"
+position = [555.0, 555.0, 555.0]
+u = [-555.0, 0.0, 0.0]
+v = [0.0, 0.0, -555.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+
+# Back Wall
+[[objects]]
+shape = "quad"
+position = [0.0, 0.0, 555.0]
+u = [555.0, 0.0, 0.0]
+v = [0.0, 555.0, 0.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+
+# Light
+[[objects]]
+shape = "quad"
+position = [343.0, 554.0, 332.0]
+u = [-130.0, 0.0, 0.0]
+v = [0.0, 0.0, -105.0]
+material = "light"
+emit = [15.0, 15.0, 15.0]
+
+# Left Box
+[[objects]]
+shape = "cube"
+a = [0.0, 0.0, 0.0]
+b = [165.0, 330.0, 165.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+
+[[objects.transform]]
+type = "rotate"
+degrees = 15.0
+axis = "y"
+
+[[objects.transform]]
+type = "translate"
+offset = [265.0, 0.0, 295.0]
+
+# Right Box
+[[objects]]
+shape = "cube"
+a = [0.0, 0.0, 0.0]
+b = [165.0, 165.0, 165.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+
+[[objects.transform]]
+type = "rotate"
+degrees = -18.0
+axis = "y"
+
+[[objects.transform]]
+type = "translate"
+offset = [130.0, 0.0, 65.0]
+
+# Smoke
+[[objects]]
+shape = "cube"
+a = [0.0, 0.0, 0.0]
+b = [550.0, 550.0, 550.0]
+material = "lambertian"
+albedo = [0.73, 0.73, 0.73]
+[objects.volume]
+density = 0.001
+albedo = [0.98, 0.98, 0.98]
