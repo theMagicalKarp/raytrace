@@ -6,7 +6,7 @@ const PERLIN_POINT_COUNT: usize = 256;
 
 #[derive(Debug, Clone)]
 pub struct Perlin {
-    randvec: Box<[Vector3<f32>; PERLIN_POINT_COUNT]>,
+    randvec: Box<[Vector3<f64>; PERLIN_POINT_COUNT]>,
     perm_x: Box<[usize; PERLIN_POINT_COUNT]>,
     perm_y: Box<[usize; PERLIN_POINT_COUNT]>,
     perm_z: Box<[usize; PERLIN_POINT_COUNT]>,
@@ -21,12 +21,12 @@ impl Default for Perlin {
 impl Perlin {
     pub fn new() -> Self {
         let mut rng = rand::rng();
-        let mut randvec = [Vector3::<f32>::default(); PERLIN_POINT_COUNT];
+        let mut randvec = [Vector3::<f64>::default(); PERLIN_POINT_COUNT];
         for vec in randvec.iter_mut() {
             *vec = Vector3::new(
-                rng.random_range(-1.0f32..1.0f32),
-                rng.random_range(-1.0f32..1.0f32),
-                rng.random_range(-1.0f32..1.0f32),
+                rng.random_range(-1.0f64..1.0f64),
+                rng.random_range(-1.0f64..1.0f64),
+                rng.random_range(-1.0f64..1.0f64),
             )
             .normalize();
         }
@@ -48,7 +48,7 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, point: Vector3<f32>) -> f32 {
+    pub fn noise(&self, point: Vector3<f64>) -> f64 {
         let u = point.x - point.x.floor();
         let v = point.y - point.y.floor();
         let w = point.z - point.z.floor();
@@ -56,7 +56,7 @@ impl Perlin {
         let i = (point.x.floor()) as i32;
         let j = (point.y.floor()) as i32;
         let k = (point.z.floor()) as i32;
-        let mut c = [[[Vector3::<f32>::default(); 2]; 2]; 2];
+        let mut c = [[[Vector3::<f64>::default(); 2]; 2]; 2];
 
         iproduct!(0..2, 0..2, 0..2).for_each(|(di, dj, dk)| {
             let xi = ((i + di) & 255) as usize;
@@ -79,7 +79,7 @@ impl Perlin {
         (1..n).rev().for_each(|i| p.swap(i, rng.random_range(0..i)));
     }
 
-    pub fn turb(&self, point: Vector3<f32>, depth: u32) -> f32 {
+    pub fn turb(&self, point: Vector3<f64>, depth: u32) -> f64 {
         let mut temp_p = point;
         let mut weight = 1.0;
         (0..depth)
@@ -89,22 +89,22 @@ impl Perlin {
                 temp_p *= 2.0;
                 val
             })
-            .sum::<f32>()
+            .sum::<f64>()
             .abs()
     }
 
-    pub fn perlin_interp(c: &[[[Vector3<f32>; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
+    pub fn perlin_interp(c: &[[[Vector3<f64>; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
         let vv = v * v * (3.0 - 2.0 * v);
         let ww = w * w * (3.0 - 2.0 * w);
 
         iproduct!(0..2, 0..2, 0..2)
             .map(|(i, j, k)| {
-                let fi = i as f32;
-                let ji = j as f32;
-                let ki = k as f32;
+                let fi = i as f64;
+                let ji = j as f64;
+                let ki = k as f64;
 
-                let weight_v = Vector3::<f32>::new(u - fi, v - ji, w - ki);
+                let weight_v = Vector3::<f64>::new(u - fi, v - ji, w - ki);
 
                 (fi * uu + (1.0 - fi) * (1.0 - uu))
                     * (ji * vv + (1.0 - ji) * (1.0 - vv))

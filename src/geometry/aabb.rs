@@ -19,7 +19,7 @@ impl Aabb {
         value
     }
 
-    pub fn from_points(a: Vector3<f32>, b: Vector3<f32>) -> Self {
+    pub fn from_points(a: Vector3<f64>, b: Vector3<f64>) -> Self {
         let x = match a.x <= b.x {
             true => Interval::new(a.x, b.x),
             false => Interval::new(b.x, a.x),
@@ -103,7 +103,7 @@ impl Aabb {
         }
     }
 
-    pub fn vertices(&self) -> impl Iterator<Item = Vector3<f32>> {
+    pub fn vertices(&self) -> impl Iterator<Item = Vector3<f64>> {
         iproduct!(
             [self.x.max, self.x.min].into_iter(),
             [self.y.max, self.y.min].into_iter(),
@@ -113,9 +113,9 @@ impl Aabb {
     }
 }
 
-impl Add<Vector3<f32>> for Aabb {
+impl Add<Vector3<f64>> for Aabb {
     type Output = Self;
-    fn add(self, offset: Vector3<f32>) -> Self::Output {
+    fn add(self, offset: Vector3<f64>) -> Self::Output {
         Aabb::new(self.x + offset.x, self.y + offset.y, self.z + offset.z)
     }
 }

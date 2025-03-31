@@ -2,13 +2,13 @@ use nalgebra::Vector3;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Ray {
-    pub origin: Vector3<f32>,
-    pub direction: Vector3<f32>,
-    pub time: f32,
+    pub origin: Vector3<f64>,
+    pub direction: Vector3<f64>,
+    pub time: f64,
 }
 
 impl Ray {
-    pub fn new(origin: Vector3<f32>, direction: Vector3<f32>, time: f32) -> Self {
+    pub fn new(origin: Vector3<f64>, direction: Vector3<f64>, time: f64) -> Self {
         Ray {
             origin,
             direction,
@@ -16,7 +16,7 @@ impl Ray {
         }
     }
 
-    pub fn at(&self, time: f32) -> Vector3<f32> {
+    pub fn at(&self, time: f64) -> Vector3<f64> {
         self.origin + self.direction * time
     }
 }

@@ -66,7 +66,7 @@ pub enum AspectRatios {
 }
 
 impl AspectRatios {
-    pub fn get_ratio(&self) -> (f32, f32) {
+    pub fn get_ratio(&self) -> (f64, f64) {
         match self {
             AspectRatios::Widescreen => (16.0, 9.0),
             AspectRatios::Square => (1.0, 1.0),
@@ -79,7 +79,7 @@ impl AspectRatios {
     pub fn get_height(&self, width: u32) -> u32 {
         let (ratio_x, ratio_y) = self.get_ratio();
         let ratio = ratio_x / ratio_y;
-        std::cmp::max(1, (width as f32 / ratio) as u32)
+        std::cmp::max(1, (width as f64 / ratio) as u32)
     }
 }
 
@@ -98,19 +98,19 @@ pub struct CameraOptions {
     pub samples: u32,
     pub max_bounces: u32,
     pub threads: usize,
-    pub fov: f32,
+    pub fov: f64,
 
-    pub look_from: [f32; 3],
-    pub look_at: [f32; 3],
-    pub vup: [f32; 3],
+    pub look_from: [f64; 3],
+    pub look_at: [f64; 3],
+    pub vup: [f64; 3],
 
     #[serde_inline_default(0.0)]
-    pub defocus_angle: f32,
+    pub defocus_angle: f64,
     #[serde_inline_default(1.0)]
-    pub focus_dist: f32,
+    pub focus_dist: f64,
 
     #[serde(default)]
-    pub background: [f32; 3],
+    pub background: [f64; 3],
 }
 
 impl CameraOptions {
@@ -126,13 +126,13 @@ impl CameraOptions {
 #[serde(tag = "material", deny_unknown_fields)]
 enum MaterialDef {
     #[serde(rename = "lambertian")]
-    Lambertian { albedo: [f32; 3] },
+    Lambertian { albedo: [f64; 3] },
 
     #[serde(rename = "checkered")]
     Checkered {
-        even: Option<[f32; 3]>,
-        odd: Option<[f32; 3]>,
-        scale: Option<f32>,
+        even: Option<[f64; 3]>,
+        odd: Option<[f64; 3]>,
+        scale: Option<f64>,
     },
 
     #[serde(rename = "texture")]
@@ -140,15 +140,15 @@ enum MaterialDef {
 
     #[serde(rename = "noise")]
     Noise {
-        scale: Option<f32>,
+        scale: Option<f64>,
         turbulance: Option<u32>,
     },
 
     #[serde(rename = "metal")]
-    Metal { albedo: [f32; 3], roughness: f32 },
+    Metal { albedo: [f64; 3], roughness: f64 },
 
     #[serde(rename = "dielectric")]
-    Dielectric { refraction_index: f32 },
+    Dielectric { refraction_index: f64 },
 
     #[serde(rename = "glass")]
     Glass {},
@@ -157,7 +157,7 @@ enum MaterialDef {
     Water {},
 
     #[serde(rename = "light")]
-    Light { emit: [f32; 3] },
+    Light { emit: [f64; 3] },
 }
 
 impl MaterialDef {
@@ -211,12 +211,12 @@ impl MaterialDef {
 
 #[derive(Deserialize)]
 struct RawTranslate {
-    offset: [f32; 3],
+    offset: [f64; 3],
 }
 
 #[derive(Deserialize)]
 struct RawRotate {
-    degrees: f32,
+    degrees: f64,
     axis: Axis,
 }
 
@@ -244,16 +244,16 @@ impl Transform {
 
 #[derive(Deserialize)]
 struct RawVolume {
-    density: f32,
-    albedo: [f32; 3],
+    density: f64,
+    albedo: [f64; 3],
 }
 
 #[derive(Deserialize)]
 struct RawSphere {
     #[serde(rename = "position")]
-    center: [f32; 3],
-    direction: Option<[f32; 3]>,
-    radius: f32,
+    center: [f64; 3],
+    direction: Option<[f64; 3]>,
+    radius: f64,
     #[serde(flatten)]
     material_def: MaterialDef,
     #[serde(default)]
@@ -291,9 +291,9 @@ impl RawSphere {
 
 #[derive(Deserialize)]
 struct RawQuad {
-    position: [f32; 3],
-    u: [f32; 3],
-    v: [f32; 3],
+    position: [f64; 3],
+    u: [f64; 3],
+    v: [f64; 3],
     #[serde(flatten)]
     material_def: MaterialDef,
     #[serde(default)]
@@ -318,8 +318,8 @@ impl RawQuad {
 
 #[derive(Deserialize)]
 struct RawCube {
-    a: [f32; 3],
-    b: [f32; 3],
+    a: [f64; 3],
+    b: [f64; 3],
     #[serde(flatten)]
     material_def: MaterialDef,
     #[serde(default)]

@@ -19,11 +19,11 @@ impl Light {
 }
 
 impl Surface for Light {
-    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Vector3<f32>, _: &mut Ray) -> bool {
+    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Vector3<f64>, _: &mut Ray) -> bool {
         false
     }
 
-    fn emitted(&self, u: f32, v: f32, p: Vector3<f32>) -> Vector3<f32> {
+    fn emitted(&self, u: f64, v: f64, p: Vector3<f64>) -> Vector3<f64> {
         self.texture.sample(u, v, p)
     }
 }

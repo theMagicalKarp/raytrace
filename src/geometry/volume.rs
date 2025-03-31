@@ -13,12 +13,12 @@ use rand::prelude::*;
 #[derive(Debug, Clone)]
 pub struct Volume {
     boundry: Box<Geometry>,
-    neg_inv_density: f32,
+    neg_inv_density: f64,
     phase_function: Material,
 }
 
 impl Volume {
-    pub fn new(boundry: Geometry, density: f32, texture: Texture) -> Self {
+    pub fn new(boundry: Geometry, density: f64, texture: Texture) -> Self {
         let boundry = Box::new(boundry);
         let neg_inv_density = -1.0 / density;
         let phase_function = Isotropic::material(texture);
@@ -28,7 +28,7 @@ impl Volume {
             phase_function,
         }
     }
-    pub fn geometry(boundry: Geometry, density: f32, texture: Texture) -> Geometry {
+    pub fn geometry(boundry: Geometry, density: f64, texture: Texture) -> Geometry {
         Geometry::Volume(Volume::new(boundry, density, texture))
     }
 }
@@ -44,7 +44,7 @@ impl Hittable for Volume {
 
         if !self.boundry.hit(
             r,
-            &Interval::new(record_a.t + 0.0001, f32::INFINITY),
+            &Interval::new(record_a.t + 0.0001, f64::INFINITY),
             &mut record_b,
         ) {
             return false;
@@ -69,7 +69,7 @@ impl Hittable for Volume {
         let ray_length = r.direction.norm();
         let distance_inside_boundary = (record_b.t - record_a.t) * ray_length;
         let mut rng = rand::rng();
-        let random_double = rng.random_range(0.0f32..1.0f32);
+        let random_double = rng.random_range(0.0f64..1.0f64);
         let hit_distance = self.neg_inv_density * random_double.ln();
 
         if hit_distance > distance_inside_boundary {

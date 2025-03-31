@@ -9,18 +9,18 @@ use nalgebra::Vector3;
 
 #[derive(Debug, Clone)]
 pub struct Quad {
-    pub q: Vector3<f32>,
-    pub u: Vector3<f32>,
-    pub v: Vector3<f32>,
+    pub q: Vector3<f64>,
+    pub u: Vector3<f64>,
+    pub v: Vector3<f64>,
     pub material: Material,
     pub bbox: Aabb,
-    pub normal: Vector3<f32>,
-    pub d: f32,
-    pub w: Vector3<f32>,
+    pub normal: Vector3<f64>,
+    pub d: f64,
+    pub w: Vector3<f64>,
 }
 
 impl Quad {
-    pub fn new(q: Vector3<f32>, u: Vector3<f32>, v: Vector3<f32>, material: Material) -> Self {
+    pub fn new(q: Vector3<f64>, u: Vector3<f64>, v: Vector3<f64>, material: Material) -> Self {
         let n = u.cross(&v);
         let normal = n.normalize();
         let d = normal.dot(&q);
@@ -41,16 +41,16 @@ impl Quad {
         }
     }
     pub fn geomtry(
-        q: Vector3<f32>,
-        u: Vector3<f32>,
-        v: Vector3<f32>,
+        q: Vector3<f64>,
+        u: Vector3<f64>,
+        v: Vector3<f64>,
         material: Material,
     ) -> Geometry {
         Geometry::Quad(Quad::new(q, u, v, material))
     }
 }
 
-fn is_interior(a: f32, b: f32, record: &mut HitRecord) -> bool {
+fn is_interior(a: f64, b: f64, record: &mut HitRecord) -> bool {
     let unit_interval = Interval::new(0.0, 1.0);
 
     if !unit_interval.contains(a) || !unit_interval.contains(b) {
