@@ -1,9 +1,8 @@
 [camera]
 aspect_ratio = "widescreen"
-image_width = 400
-samples = 128
+image_width = 600
+samples = 300
 max_bounces = 64
-threads = 4
 fov = 20.0
 look_from = [13.0, 2.0, 3.0]
 look_at = [0.0, 0.0, 0.0]

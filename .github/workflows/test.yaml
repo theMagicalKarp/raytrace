@@ -59,6 +59,7 @@ jobs:
           - perlin
           - cornell_box
           - smoke
+          - quads
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +70,7 @@ jobs:
       - run: chmod +x ./target/release/raytrace
       - env:
           CONFIG: ${{ matrix.config }}
-        run: ./target/release/raytrace --config "examples/$CONFIG/render.toml" --output render.png
+        run: ./target/release/raytrace --config "examples/$CONFIG/render.toml" --output render.png --samples 100
       - uses: actions/upload-artifact@v4
         with:
             name: ${{ matrix.config }}-render

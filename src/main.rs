@@ -27,7 +27,7 @@ fn main() {
         }
     };
 
-    let config: Config = match toml::from_str(&config_content) {
+    let mut config: Config = match toml::from_str(&config_content) {
         Ok(config) => config,
         Err(e) => {
             if let Some(span) = e.span() {
@@ -51,6 +51,11 @@ fn main() {
             println!("Error parsing config file: {}", e);
             return;
         }
+    };
+
+    config.camera.samples = match args.samples {
+        Some(samples) => samples,
+        None => config.camera.samples,
     };
 
     println!("{}", config);

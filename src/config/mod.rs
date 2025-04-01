@@ -36,6 +36,9 @@ pub struct Args {
     /// Path of file to save the render to
     #[arg(short, long, default_value = "render.png")]
     pub output: PathBuf,
+
+    #[arg(short, long)]
+    pub samples: Option<u32>,
 }
 
 fn file_exists(path: &str) -> Result<PathBuf, String> {
@@ -97,6 +100,7 @@ pub struct CameraOptions {
     pub image_width: u32,
     pub samples: u32,
     pub max_bounces: u32,
+    #[serde(default = "default_threads")]
     pub threads: usize,
     pub fov: f64,
 
@@ -111,6 +115,10 @@ pub struct CameraOptions {
 
     #[serde(default)]
     pub background: [f64; 3],
+}
+
+fn default_threads() -> usize {
+    usize::max(1, num_cpus::get() - 1)
 }
 
 impl CameraOptions {
