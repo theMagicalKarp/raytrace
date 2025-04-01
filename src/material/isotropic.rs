@@ -27,7 +27,7 @@ impl Surface for Isotropic {
         &self,
         r_in: &Ray,
         record: &HitRecord,
-        attenuation: &mut Vector3<f32>,
+        attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
     ) -> bool {
         scattered.origin = record.point;
@@ -37,7 +37,7 @@ impl Surface for Isotropic {
         true
     }
 
-    fn emitted(&self, _: f32, _: f32, _: Vector3<f32>) -> Vector3<f32> {
-        Vector3::<f32>::default()
+    fn emitted(&self, _: f64, _: f64, _: Vector3<f64>) -> Vector3<f64> {
+        Vector3::<f64>::default()
     }
 }

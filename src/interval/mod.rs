@@ -1,20 +1,20 @@
-use core::f32;
+use core::f64;
 use std::ops::Add;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Interval {
-    pub min: f32,
-    pub max: f32,
+    pub min: f64,
+    pub max: f64,
 }
 
 impl Interval {
-    pub fn new(min: f32, max: f32) -> Self {
+    pub fn new(min: f64, max: f64) -> Self {
         Self { min, max }
     }
 
     pub fn universe() -> Self {
-        let min = f32::NEG_INFINITY;
-        let max = f32::INFINITY;
+        let min = f64::NEG_INFINITY;
+        let max = f64::INFINITY;
         Interval { min, max }
     }
 
@@ -24,11 +24,11 @@ impl Interval {
         Interval { min, max }
     }
 
-    pub fn size(&self) -> f32 {
+    pub fn size(&self) -> f64 {
         self.max - self.min
     }
 
-    pub fn expand(&self, delta: f32) -> Self {
+    pub fn expand(&self, delta: f64) -> Self {
         let padding = delta / 2.0;
         Interval {
             min: self.min - padding,
@@ -36,11 +36,11 @@ impl Interval {
         }
     }
 
-    pub fn contains(&self, x: f32) -> bool {
+    pub fn contains(&self, x: f64) -> bool {
         self.min <= x && x <= self.max
     }
 
-    pub fn clamp(&self, value: f32) -> f32 {
+    pub fn clamp(&self, value: f64) -> f64 {
         if value < self.min {
             self.min
         } else if value > self.max {
@@ -50,15 +50,15 @@ impl Interval {
         }
     }
 
-    pub fn surrounds(&self, value: f32) -> bool {
+    pub fn surrounds(&self, value: f64) -> bool {
         value > self.min && value < self.max
     }
 }
 
 impl Default for Interval {
     fn default() -> Self {
-        let min = f32::INFINITY;
-        let max = f32::NEG_INFINITY;
+        let min = f64::INFINITY;
+        let max = f64::NEG_INFINITY;
         Interval { min, max }
     }
 }
@@ -81,9 +81,9 @@ impl PartialOrd for Interval {
     }
 }
 
-impl Add<f32> for Interval {
+impl Add<f64> for Interval {
     type Output = Self;
-    fn add(self, offset: f32) -> Self::Output {
+    fn add(self, offset: f64) -> Self::Output {
         Interval {
             min: self.min + offset,
             max: self.max + offset,

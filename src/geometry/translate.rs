@@ -9,12 +9,12 @@ use nalgebra::Vector3;
 #[derive(Debug, Clone)]
 pub struct Translate {
     geometry: Box<Geometry>,
-    offset: Vector3<f32>,
+    offset: Vector3<f64>,
     bbox: Aabb,
 }
 
 impl Translate {
-    pub fn new(geometry: Geometry, offset: Vector3<f32>) -> Self {
+    pub fn new(geometry: Geometry, offset: Vector3<f64>) -> Self {
         let geometry = Box::new(geometry);
         let bbox = geometry.bounding_box() + offset;
         Translate {
@@ -23,7 +23,7 @@ impl Translate {
             bbox,
         }
     }
-    pub fn geometry(geometry: Geometry, offset: Vector3<f32>) -> Geometry {
+    pub fn geometry(geometry: Geometry, offset: Vector3<f64>) -> Geometry {
         Geometry::Translate(Translate::new(geometry, offset))
     }
 }

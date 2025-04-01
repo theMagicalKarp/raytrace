@@ -11,13 +11,13 @@ use nalgebra::Vector3;
 #[derive(Debug, Clone)]
 pub struct Rotate {
     geometry: Box<Geometry>,
-    rotation: Rotation3<f32>,
+    rotation: Rotation3<f64>,
     bbox: Aabb,
 }
 
 impl Rotate {
-    pub fn new(geometry: Geometry, axis: Axis, angle: f32) -> Self {
-        let rotation: Rotation3<f32> = Rotation3::from_axis_angle(
+    pub fn new(geometry: Geometry, axis: Axis, angle: f64) -> Self {
+        let rotation: Rotation3<f64> = Rotation3::from_axis_angle(
             &match axis {
                 Axis::X => Vector3::x_axis(),
                 Axis::Y => Vector3::y_axis(),
@@ -26,18 +26,18 @@ impl Rotate {
             angle.to_radians(),
         );
 
-        let rotated_vertices: Vec<Vector3<f32>> = geometry
+        let rotated_vertices: Vec<Vector3<f64>> = geometry
             .bounding_box()
             .vertices()
             .map(|vertex| rotation * vertex)
             .collect();
 
         let min = rotated_vertices.iter().fold(
-            Vector3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY),
+            Vector3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY),
             |culm, vert| culm.inf(vert),
         );
         let max = rotated_vertices.iter().fold(
-            Vector3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY),
+            Vector3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY),
             |culm, vert| culm.sup(vert),
         );
 
@@ -50,7 +50,7 @@ impl Rotate {
             bbox,
         }
     }
-    pub fn geometry(geometry: Geometry, axis: Axis, angle: f32) -> Geometry {
+    pub fn geometry(geometry: Geometry, axis: Axis, angle: f64) -> Geometry {
         Geometry::Rotate(Rotate::new(geometry, axis, angle))
     }
 }

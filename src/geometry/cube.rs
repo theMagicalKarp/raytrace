@@ -15,9 +15,9 @@ pub struct Cube {
 }
 
 impl Cube {
-    pub fn new(a: Vector3<f32>, b: Vector3<f32>, material: Material) -> Self {
-        let min = Vector3::new(f32::min(a.x, b.x), f32::min(a.y, b.y), f32::min(a.z, b.z));
-        let max = Vector3::new(f32::max(a.x, b.x), f32::max(a.y, b.y), f32::max(a.z, b.z));
+    pub fn new(a: Vector3<f64>, b: Vector3<f64>, material: Material) -> Self {
+        let min = Vector3::new(f64::min(a.x, b.x), f64::min(a.y, b.y), f64::min(a.z, b.z));
+        let max = Vector3::new(f64::max(a.x, b.x), f64::max(a.y, b.y), f64::max(a.z, b.z));
 
         let dx = Vector3::new(max.x - min.x, 0.0, 0.0);
         let dy = Vector3::new(0.0, max.y - min.y, 0.0);
@@ -36,7 +36,7 @@ impl Cube {
 
         Cube { children }
     }
-    pub fn geometry(a: Vector3<f32>, b: Vector3<f32>, material: Material) -> Geometry {
+    pub fn geometry(a: Vector3<f64>, b: Vector3<f64>, material: Material) -> Geometry {
         Geometry::Cube(Cube::new(a, b, material))
     }
 }

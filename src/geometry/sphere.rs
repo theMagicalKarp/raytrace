@@ -6,17 +6,17 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
     pub center: Ray,
-    pub radius: f32,
+    pub radius: f64,
     pub material: Material,
     pub bbox: Aabb,
 }
 
-pub fn get_sphere_uv(point: Vector3<f32>) -> (f32, f32) {
+pub fn get_sphere_uv(point: Vector3<f64>) -> (f64, f64) {
     let theta = point.y.acos();
     let phi = (-point.z).atan2(point.x) + PI;
 
@@ -25,9 +25,9 @@ pub fn get_sphere_uv(point: Vector3<f32>) -> (f32, f32) {
 
 impl Sphere {
     pub fn new(
-        center: Vector3<f32>,
-        direction: Vector3<f32>,
-        radius: f32,
+        center: Vector3<f64>,
+        direction: Vector3<f64>,
+        radius: f64,
         material: Material,
     ) -> Sphere {
         let center = Ray::new(center, direction, 0.0);
@@ -45,9 +45,9 @@ impl Sphere {
     }
 
     pub fn geometry(
-        center: Vector3<f32>,
-        direction: Vector3<f32>,
-        radius: f32,
+        center: Vector3<f64>,
+        direction: Vector3<f64>,
+        radius: f64,
         material: Material,
     ) -> Geometry {
         Geometry::Sphere(Sphere::new(center, direction, radius, material))

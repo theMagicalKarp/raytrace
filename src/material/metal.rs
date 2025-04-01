@@ -9,12 +9,12 @@ use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
 pub struct Metal {
-    pub albedo: Vector3<f32>,
-    pub roughness: f32,
+    pub albedo: Vector3<f64>,
+    pub roughness: f64,
 }
 
 impl Metal {
-    pub fn material(albedo: Vector3<f32>, roughness: f32) -> Material {
+    pub fn material(albedo: Vector3<f64>, roughness: f64) -> Material {
         Material::Metal(Metal { albedo, roughness })
     }
 }
@@ -24,7 +24,7 @@ impl Surface for Metal {
         &self,
         r_in: &Ray,
         record: &HitRecord,
-        attenuation: &mut Vector3<f32>,
+        attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
     ) -> bool {
         let mut reflected = reflect(&r_in.direction, &record.normal);
@@ -37,7 +37,7 @@ impl Surface for Metal {
         scattered.direction.dot(&record.normal) > 0.0
     }
 
-    fn emitted(&self, _: f32, _: f32, _: Vector3<f32>) -> Vector3<f32> {
-        Vector3::<f32>::default()
+    fn emitted(&self, _: f64, _: f64, _: Vector3<f64>) -> Vector3<f64> {
+        Vector3::<f64>::default()
     }
 }

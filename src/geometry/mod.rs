@@ -71,17 +71,17 @@ impl Hittable for Geometry {
 }
 
 pub struct HitRecord {
-    pub point: Vector3<f32>,
-    pub normal: Vector3<f32>,
-    pub t: f32,
+    pub point: Vector3<f64>,
+    pub normal: Vector3<f64>,
+    pub t: f64,
     pub front_face: bool,
     pub material: Material,
-    pub u: f32,
-    pub v: f32,
+    pub u: f64,
+    pub v: f64,
 }
 
 impl HitRecord {
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vector3<f32>) {
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vector3<f64>) {
         self.front_face = r.direction.dot(outward_normal) < 0.0;
         self.normal = if self.front_face {
             *outward_normal

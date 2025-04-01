@@ -20,10 +20,10 @@ pub trait Surface {
         &self,
         ray_in: &Ray,
         record: &HitRecord,
-        attenuation: &mut Vector3<f32>,
+        attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
     ) -> bool;
-    fn emitted(&self, u: f32, v: f32, p: Vector3<f32>) -> Vector3<f32>;
+    fn emitted(&self, u: f64, v: f64, p: Vector3<f64>) -> Vector3<f64>;
 }
 
 #[derive(Debug, Clone)]
@@ -40,7 +40,7 @@ impl Surface for Material {
         &self,
         ray_in: &Ray,
         record: &HitRecord,
-        attenuation: &mut Vector3<f32>,
+        attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
     ) -> bool {
         match self {
@@ -57,7 +57,7 @@ impl Surface for Material {
             }
         }
     }
-    fn emitted(&self, u: f32, v: f32, p: Vector3<f32>) -> Vector3<f32> {
+    fn emitted(&self, u: f64, v: f64, p: Vector3<f64>) -> Vector3<f64> {
         match self {
             Material::Metal(material) => material.emitted(u, v, p),
             Material::Dielectric(material) => material.emitted(u, v, p),
