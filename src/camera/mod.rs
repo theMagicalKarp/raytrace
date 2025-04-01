@@ -13,6 +13,8 @@ use std::f64::consts::PI;
 use std::io::{self, Write};
 use std::sync::Arc;
 use std::sync::mpsc::channel;
+use std::time::Duration;
+use std::time::Instant;
 use threadpool::ThreadPool;
 
 #[derive(Debug, Clone, Copy)]
@@ -127,6 +129,8 @@ impl Camera {
     }
 
     pub fn render(&self, world: &Geometry) -> RgbImage {
+        let now = Instant::now();
+
         let pool = ThreadPool::new(self.threads);
         let (tx, rx) = channel();
         let world = Arc::new(world.clone());
@@ -145,6 +149,7 @@ impl Camera {
         drop(tx);
         let mut image = RgbImage::new(self.image_width, self.image_height);
         let total = self.image_width * self.image_height;
+        let total_digits = total.to_string().len();
         let is_tty = atty::is(atty::Stream::Stdout);
         let print_at = match is_tty {
             true => (total as f64 * 0.01) as usize,
@@ -153,7 +158,15 @@ impl Camera {
         for (i, (x, y, pixel)) in rx.iter().enumerate() {
             if i % print_at == 0 {
                 let percent = (x + y * self.image_width) * 100 / (total);
-                let msg = format!("Rendering: {:3}% ({}/{})", percent, i, total);
+
+                let msg = format!(
+                    "Rendering: {:3}% ({:total_digits$}/{:total_digits$}) {:>16}",
+                    percent,
+                    i,
+                    total,
+                    humantime::format_duration(Duration::from_secs(now.elapsed().as_secs()))
+                        .to_string()
+                );
                 if is_tty {
                     print!("{}\r", msg);
                     io::stdout().flush().expect("Flush to STDOUT failed");
@@ -164,7 +177,12 @@ impl Camera {
 
             image.put_pixel(x, y, pixel);
         }
-        println!("Rendering: 100% ({}/{})", total, total);
+        println!(
+            "Rendering: 100% ({:total_digits$}/{:total_digits$}) {:>16}",
+            total,
+            total,
+            humantime::format_duration(Duration::from_secs(now.elapsed().as_secs())).to_string()
+        );
         image
     }
 
