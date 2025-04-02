@@ -1,0 +1,83 @@
+[camera]
+aspect_ratio = "widescreen"
+image_width = 600
+samples = 3000
+max_bounces = 64
+fov = 40
+look_from = [7.0, 5.0, 3.0]
+look_at = [0.0, 2.2, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+# Sphere
+[[objects]]
+shape = "sphere"
+position = [0.0, 0.0, 0.0]
+radius = 1.0
+
+material = "light"
+emit = [0.1, 0.1, 7.0]
+
+[[objects.transform]]
+type = "translate"
+offset = [3.0, 2.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 180
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 0.0, -1.0]
+
+
+# Sphere
+[[objects]]
+shape = "sphere"
+position = [0.0, 0.0, 0.0]
+radius = 1.0
+
+material = "light"
+emit = [0.1, 7.0, 0.1]
+
+[[objects.transform]]
+type = "translate"
+offset = [2.5, 2.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 20
+
+
+# Sphere
+[[objects]]
+shape = "sphere"
+position = [0.0, 0.0, 0.0]
+radius = 1.0
+
+material = "light"
+emit = [7.0, 0.1, 0.1]
+
+[[objects.transform]]
+type = "translate"
+offset = [3.0, 2.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = -80
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 0.0, -1.0]
+
+# Floor
+[[objects]]
+shape = "sphere"
+position = [0.0, -1000.0, 0.0]
+radius = 1000.0
+scale = 2.0
+material = "checkered"
+even = [0.2, 0.3, 0.1]
+odd = [0.9, 0.9, 0.9]

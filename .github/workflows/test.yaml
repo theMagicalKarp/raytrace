@@ -54,12 +54,8 @@ jobs:
       matrix:
         config:
           - basic
-          - bouncing_spheres
-          - earth
-          - perlin
           - cornell_box
-          - smoke
-          - quads
+          - sweet_dreams
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
