@@ -1,0 +1,45 @@
+[camera]
+aspect_ratio = "widescreen"
+image_width = 600
+samples = 3000
+max_bounces = 64
+fov = 40
+look_from = [7.0, 5.0, 3.0]
+look_at = [0.0, 2.2, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+# Sphere
+[[objects]]
+shape = "sphere"
+position = [0.0, 2.2, 0.0]
+radius = 1.5
+
+material = "glass"
+
+# Floor
+[[objects]]
+shape = "sphere"
+position = [0.0, -1000.0, 0.0]
+radius = 1000.0
+scale = 2.0
+material = "checkered"
+even = [0.2, 0.3, 0.1]
+odd = [0.9, 0.9, 0.9]
+
+# Light
+[[objects]]
+shape = "quad"
+position = [5.0, 0.0, 5.0]
+u = [-10.0, 0.0, 0.0]
+v = [0.0, 0.0, -10.0]
+material = "light"
+emit = [3.0, 3.0, 3.0]
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 10.0, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+degrees = -30.0
+axis = "z"

@@ -1,6 +1,6 @@
 use crate::interval::Interval;
 use crate::noise::Perlin;
-use image::RgbImage;
+use image::Rgb32FImage;
 use nalgebra::Vector3;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -74,11 +74,11 @@ impl Sample for Checkered {
 
 #[derive(Debug, Clone)]
 pub struct Image {
-    pub data: Arc<RgbImage>,
+    pub data: Arc<Rgb32FImage>,
 }
 
 impl Image {
-    pub fn texture(data: RgbImage) -> Texture {
+    pub fn texture(data: Rgb32FImage) -> Texture {
         let data = Arc::new(data);
         Texture::Image(Image { data })
     }
@@ -95,9 +95,11 @@ impl Sample for Image {
         let j = (v * self.data.height() as f64) as u32;
 
         let pixel = self.data.get_pixel(i, j);
-        let color_scale = 1.0 / 256.0;
-
-        Vector3::new(pixel[0] as f64, pixel[1] as f64, pixel[2] as f64) * color_scale
+        Vector3::new(
+            pixel[0].powf(2.0) as f64,
+            pixel[1].powf(2.0) as f64,
+            pixel[2].powf(2.0) as f64,
+        ) * 2.0
     }
 }
 

@@ -37,6 +37,7 @@ pub struct Args {
     #[arg(short, long, default_value = "render.png")]
     pub output: PathBuf,
 
+    /// Directly override the sample count listed in the configuration file
     #[arg(short, long)]
     pub samples: Option<u32>,
 }
@@ -193,7 +194,7 @@ impl MaterialDef {
             }
             MaterialDef::Texture { file } => {
                 let texture_path = config_dir.join(file);
-                let buffer = ImageReader::open(texture_path)?.decode()?.to_rgb8();
+                let buffer = ImageReader::open(texture_path)?.decode()?.to_rgb32f();
                 let image = Image::texture(buffer);
                 Ok(Lambertian::material(image))
             }
