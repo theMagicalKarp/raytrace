@@ -5,6 +5,7 @@ use crate::material::texture::Sample;
 use crate::material::texture::Texture;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -19,7 +20,14 @@ impl Light {
 }
 
 impl Surface for Light {
-    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Vector3<f64>, _: &mut Ray) -> bool {
+    fn scatter(
+        &self,
+        _: &Ray,
+        _: &HitRecord,
+        _: &mut Vector3<f64>,
+        _: &mut Ray,
+        _: &mut ThreadRng,
+    ) -> bool {
         false
     }
 

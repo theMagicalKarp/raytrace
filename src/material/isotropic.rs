@@ -6,6 +6,7 @@ use crate::material::texture::Texture;
 use crate::math;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -29,10 +30,11 @@ impl Surface for Isotropic {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
         scattered.origin = record.point;
         scattered.time = r_in.time;
-        scattered.direction = math::random_normal();
+        scattered.direction = math::random_normal(rng);
         attenuation.copy_from(&self.texture.sample(record.u, record.v, record.point));
         true
     }

@@ -5,6 +5,7 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::empty::Empty;
 use crate::interval::Interval;
 use crate::ray::Ray;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct BvhNode {
@@ -56,12 +57,18 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
         if !self.bbox.hit(r, interval) {
             return false;
         }
 
-        let left_hit = self.left.hit(r, interval, record);
+        let left_hit = self.left.hit(r, interval, record, rng);
         let new_interval = match left_hit {
             true => &Interval {
                 min: interval.min,
@@ -70,7 +77,7 @@ impl Hittable for BvhNode {
             false => interval,
         };
 
-        let right_hit = self.right.hit(r, new_interval, record);
+        let right_hit = self.right.hit(r, new_interval, record, rng);
 
         left_hit || right_hit
     }

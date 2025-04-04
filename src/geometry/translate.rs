@@ -5,6 +5,7 @@ use crate::geometry::aabb::Aabb;
 use crate::interval::Interval;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct Translate {
@@ -29,10 +30,16 @@ impl Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
         let offset_ray = Ray::new(r.origin - self.offset, r.direction, r.time);
 
-        if !self.geometry.hit(&offset_ray, interval, record) {
+        if !self.geometry.hit(&offset_ray, interval, record, rng) {
             return false;
         }
 

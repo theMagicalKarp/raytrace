@@ -7,6 +7,7 @@ use crate::interval::Interval;
 use crate::ray::Ray;
 use nalgebra::Rotation3;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct Rotate {
@@ -56,14 +57,20 @@ impl Rotate {
 }
 
 impl Hittable for Rotate {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
         // Transform the ray from world space to object space.
         let rotated_origin = self.rotation.inverse() * r.origin;
         let rotated_direction = self.rotation.inverse() * r.direction;
         let rotated_ray = Ray::new(rotated_origin, rotated_direction, r.time);
 
         // Determine whether an intersection exists in object space (and if so, where).
-        if !self.geometry.hit(&rotated_ray, interval, record) {
+        if !self.geometry.hit(&rotated_ray, interval, record, rng) {
             return false;
         }
 

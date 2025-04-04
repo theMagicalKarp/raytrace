@@ -5,6 +5,7 @@ use crate::math;
 use crate::math::reflect;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -26,9 +27,10 @@ impl Surface for Metal {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
         let mut reflected = reflect(&r_in.direction, &record.normal);
-        reflected = reflected.normalize() + (math::random_normal() * self.roughness);
+        reflected = reflected.normalize() + (math::random_normal(rng) * self.roughness);
 
         scattered.origin = record.point;
         scattered.time = r_in.time;

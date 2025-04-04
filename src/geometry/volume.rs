@@ -9,6 +9,7 @@ use crate::material::texture::Texture;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use rand::prelude::*;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct Volume {
@@ -34,11 +35,20 @@ impl Volume {
 }
 
 impl Hittable for Volume {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
         let mut record_a = HitRecord::default();
         let mut record_b = HitRecord::default();
 
-        if !self.boundry.hit(r, &Interval::universe(), &mut record_a) {
+        if !self
+            .boundry
+            .hit(r, &Interval::universe(), &mut record_a, rng)
+        {
             return false;
         }
 
@@ -46,6 +56,7 @@ impl Hittable for Volume {
             r,
             &Interval::new(record_a.t + 0.0001, f64::INFINITY),
             &mut record_b,
+            rng,
         ) {
             return false;
         }
@@ -68,9 +79,7 @@ impl Hittable for Volume {
 
         let ray_length = r.direction.norm();
         let distance_inside_boundary = (record_b.t - record_a.t) * ray_length;
-        let mut rng = rand::rng();
-        let random_double = rng.random_range(0.0f64..1.0f64);
-        let hit_distance = self.neg_inv_density * random_double.ln();
+        let hit_distance = self.neg_inv_density * rng.random::<f64>().ln();
 
         if hit_distance > distance_inside_boundary {
             return false;

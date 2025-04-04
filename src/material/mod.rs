@@ -13,6 +13,7 @@ use crate::material::light::Light;
 use crate::material::metal::Metal;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 pub trait Surface {
@@ -22,6 +23,7 @@ pub trait Surface {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool;
     fn emitted(&self, u: f64, v: f64, p: Vector3<f64>) -> Vector3<f64>;
 }
@@ -42,18 +44,23 @@ impl Surface for Material {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
         match self {
-            Material::Metal(material) => material.scatter(ray_in, record, attenuation, scattered),
+            Material::Metal(material) => {
+                material.scatter(ray_in, record, attenuation, scattered, rng)
+            }
             Material::Dielectric(material) => {
-                material.scatter(ray_in, record, attenuation, scattered)
+                material.scatter(ray_in, record, attenuation, scattered, rng)
             }
             Material::Lambertian(material) => {
-                material.scatter(ray_in, record, attenuation, scattered)
+                material.scatter(ray_in, record, attenuation, scattered, rng)
             }
-            Material::Light(material) => material.scatter(ray_in, record, attenuation, scattered),
+            Material::Light(material) => {
+                material.scatter(ray_in, record, attenuation, scattered, rng)
+            }
             Material::Isotropic(material) => {
-                material.scatter(ray_in, record, attenuation, scattered)
+                material.scatter(ray_in, record, attenuation, scattered, rng)
             }
         }
     }

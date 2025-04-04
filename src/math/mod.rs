@@ -1,28 +1,17 @@
 use nalgebra::Vector3;
 use rand::prelude::*;
-use std::ops::Range;
 
-pub fn random(range: Range<f64>) -> Vector3<f64> {
-    let mut rng = rand::rng();
+pub fn random_vector(rng: &mut ThreadRng) -> Vector3<f64> {
     Vector3::new(
-        rng.random_range(range.clone()),
-        rng.random_range(range.clone()),
-        rng.random_range(range.clone()),
+        rng.random_range(-1.0f64..1.0f64),
+        rng.random_range(-1.0f64..1.0f64),
+        rng.random_range(-1.0f64..1.0f64),
     )
 }
 
-pub fn random_box(range: Range<f64>) -> Vector3<f64> {
-    let mut rng = rand::rng();
-    Vector3::new(
-        rng.random_range(range.clone()),
-        rng.random_range(range.clone()),
-        0.0,
-    )
-}
-
-pub fn random_normal() -> Vector3<f64> {
+pub fn random_normal(rng: &mut ThreadRng) -> Vector3<f64> {
     loop {
-        let position = random(-1.0f64..1.0f64);
+        let position = random_vector(rng);
         let lensq = position.norm_squared();
         if f64::EPSILON < lensq && lensq <= 1.0 {
             return position / lensq.sqrt();

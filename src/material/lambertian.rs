@@ -7,6 +7,7 @@ use crate::math;
 use crate::math::near_zero;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -27,8 +28,9 @@ impl Surface for Lambertian {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
-        let mut scatter_direction = record.normal + math::random_normal();
+        let mut scatter_direction = record.normal + math::random_normal(rng);
         if near_zero(&scatter_direction) {
             scatter_direction = record.normal;
         }
