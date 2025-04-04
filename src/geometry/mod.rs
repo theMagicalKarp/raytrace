@@ -24,9 +24,16 @@ use crate::material::lambertian::Lambertian;
 use crate::material::texture::SolidColor;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool;
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool;
     fn bounding_box(&self) -> Aabb;
 }
 
@@ -43,16 +50,22 @@ pub enum Geometry {
 }
 
 impl Hittable for Geometry {
-    fn hit(&self, ray: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(
+        &self,
+        ray: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
         match self {
-            Geometry::Empty(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Quad(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Sphere(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::BvhNode(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Cube(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Translate(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Rotate(geomtry) => geomtry.hit(ray, interval, record),
-            Geometry::Volume(geomtry) => geomtry.hit(ray, interval, record),
+            Geometry::Empty(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Quad(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Sphere(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::BvhNode(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Cube(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Translate(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Rotate(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Volume(geomtry) => geomtry.hit(ray, interval, record, rng),
         }
     }
 

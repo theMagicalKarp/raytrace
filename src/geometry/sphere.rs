@@ -6,6 +6,7 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 use std::f64::consts::PI;
 
 #[derive(Debug, Clone)]
@@ -55,7 +56,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord, _: &mut ThreadRng) -> bool {
         let current_center = self.center.at(r.time);
         let oc = r.origin - current_center;
 

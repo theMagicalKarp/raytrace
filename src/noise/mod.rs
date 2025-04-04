@@ -1,6 +1,7 @@
 use itertools::iproduct;
 use nalgebra::Vector3;
 use rand::prelude::*;
+use rand::rngs::ThreadRng;
 
 const PERLIN_POINT_COUNT: usize = 256;
 
@@ -14,13 +15,12 @@ pub struct Perlin {
 
 impl Default for Perlin {
     fn default() -> Self {
-        Perlin::new()
+        Perlin::new(&mut rand::rng())
     }
 }
 
 impl Perlin {
-    pub fn new() -> Self {
-        let mut rng = rand::rng();
+    pub fn new(rng: &mut ThreadRng) -> Self {
         let mut randvec = [Vector3::<f64>::default(); PERLIN_POINT_COUNT];
         for vec in randvec.iter_mut() {
             *vec = Vector3::new(
@@ -32,13 +32,13 @@ impl Perlin {
         }
 
         let mut perm_x = Box::new([0; PERLIN_POINT_COUNT]);
-        Perlin::perlin_generate_perm(&mut perm_x);
+        Perlin::perlin_generate_perm(&mut perm_x, rng);
 
         let mut perm_y = Box::new([0; PERLIN_POINT_COUNT]);
-        Perlin::perlin_generate_perm(&mut perm_y);
+        Perlin::perlin_generate_perm(&mut perm_y, rng);
 
         let mut perm_z = Box::new([0; PERLIN_POINT_COUNT]);
-        Perlin::perlin_generate_perm(&mut perm_z);
+        Perlin::perlin_generate_perm(&mut perm_z, rng);
 
         Perlin {
             randvec: Box::new(randvec),
@@ -69,13 +69,12 @@ impl Perlin {
         Perlin::perlin_interp(&c, u, v, w)
     }
 
-    pub fn perlin_generate_perm(p: &mut [usize; PERLIN_POINT_COUNT]) {
+    pub fn perlin_generate_perm(p: &mut [usize; PERLIN_POINT_COUNT], rng: &mut ThreadRng) {
         p.iter_mut().enumerate().for_each(|(i, p_i)| *p_i = i);
-        Perlin::permute(p, PERLIN_POINT_COUNT);
+        Perlin::permute(p, PERLIN_POINT_COUNT, rng);
     }
 
-    pub fn permute(p: &mut [usize; PERLIN_POINT_COUNT], n: usize) {
-        let mut rng = rand::rng();
+    pub fn permute(p: &mut [usize; PERLIN_POINT_COUNT], n: usize, rng: &mut ThreadRng) {
         (1..n).rev().for_each(|i| p.swap(i, rng.random_range(0..i)));
     }
 

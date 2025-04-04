@@ -6,6 +6,7 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct Quad {
@@ -63,7 +64,7 @@ fn is_interior(a: f64, b: f64, record: &mut HitRecord) -> bool {
 }
 
 impl Hittable for Quad {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord, _: &mut ThreadRng) -> bool {
         let denom = self.normal.dot(&r.direction);
         if denom.abs() < 1e-8 {
             return false;

@@ -8,6 +8,7 @@ use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
 pub struct Cube {
@@ -42,8 +43,14 @@ impl Cube {
 }
 
 impl Hittable for Cube {
-    fn hit(&self, r: &Ray, interval: &Interval, record: &mut HitRecord) -> bool {
-        self.children.hit(r, interval, record)
+    fn hit(
+        &self,
+        r: &Ray,
+        interval: &Interval,
+        record: &mut HitRecord,
+        rng: &mut ThreadRng,
+    ) -> bool {
+        self.children.hit(r, interval, record, rng)
     }
 
     fn bounding_box(&self) -> Aabb {

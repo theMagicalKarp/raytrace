@@ -7,6 +7,7 @@ use crate::math::refract;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 use rand::prelude::*;
+use rand::rngs::ThreadRng;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -27,6 +28,7 @@ impl Surface for Dielectric {
         record: &HitRecord,
         attenuation: &mut Vector3<f64>,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
         attenuation.copy_from(&Vector3::from_element(1.0));
         let r_index = match record.front_face {
@@ -42,13 +44,12 @@ impl Surface for Dielectric {
 
         scattered.origin = record.point;
         scattered.time = r_in.time;
-        let mut rng = rand::rng();
-        let random = rng.random_range(0.0f64..1.0f64);
 
-        scattered.direction = match cannot_refract || (reflectance(cos_theta, r_index) > random) {
-            true => reflect(&normalized_direction, &record.normal),
-            false => refract(&normalized_direction, &record.normal, r_index),
-        };
+        scattered.direction =
+            match cannot_refract || (reflectance(cos_theta, r_index) > rng.random::<f64>()) {
+                true => reflect(&normalized_direction, &record.normal),
+                false => refract(&normalized_direction, &record.normal, r_index),
+            };
 
         true
     }

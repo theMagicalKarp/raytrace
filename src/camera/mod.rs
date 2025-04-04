@@ -4,11 +4,12 @@ use crate::geometry::HitRecord;
 use crate::geometry::Hittable;
 use crate::interval::Interval;
 use crate::material::Surface;
-use crate::math;
 use crate::ray::Ray;
 use image::RgbImage;
+use itertools::iproduct;
 use nalgebra::Vector3;
 use rand::prelude::*;
+use rand::rngs::ThreadRng;
 use std::f64::consts::PI;
 use std::io::{self, Write};
 use std::sync::Arc;
@@ -22,11 +23,13 @@ pub struct Camera {
     pub image_width: u32,
     pub image_height: u32,
 
+    pub sqrt_spp: u32,
+    pub recip_sqrt_spp: f64,
+
     pub center: Vector3<f64>,
     pub pixel00_loc: Vector3<f64>,
     pub pixel_delta_u: Vector3<f64>,
     pub pixel_delta_v: Vector3<f64>,
-    pub samples: u32,
     pub samples_scale: f64,
     pub max_bounces: u32,
     pub threads: usize,
@@ -38,9 +41,7 @@ pub struct Camera {
     pub background: Vector3<f64>,
 }
 
-fn random_in_unit_disk() -> Vector3<f64> {
-    let mut rng = rand::rng();
-
+fn random_in_unit_disk(rng: &mut ThreadRng) -> Vector3<f64> {
     loop {
         let p = Vector3::new(
             rng.random_range(-1.0f64..1.0f64),
@@ -63,6 +64,21 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
 
 fn degrees_to_radians(degress: f64) -> f64 {
     degress * PI / 180.0
+}
+
+fn sample_square_stratified(
+    s_i: u32,
+    s_j: u32,
+    recip_sqrt_spp: f64,
+    rng: &mut ThreadRng,
+) -> (f64, f64) {
+    let s_i = s_i as f64;
+    let s_j = s_j as f64;
+
+    (
+        ((s_i + rng.random::<f64>()) * recip_sqrt_spp) - 0.5,
+        ((s_j + rng.random::<f64>()) * recip_sqrt_spp) - 0.5,
+    )
 }
 
 impl Camera {
@@ -105,7 +121,9 @@ impl Camera {
         let defocus_disk_v = v * defocus_radius;
 
         let samples = options.samples;
-        let samples_scale = 1.0 / (samples as f64);
+        let sqrt_spp = (samples as f64).sqrt() as u32;
+        let recip_sqrt_spp = 1.0 / (sqrt_spp as f64);
+        let samples_scale = 1.0 / ((sqrt_spp * sqrt_spp) as f64);
 
         let max_bounces = options.max_bounces;
         let threads = options.threads;
@@ -117,7 +135,6 @@ impl Camera {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
-            samples,
             samples_scale,
             max_bounces,
             threads,
@@ -125,6 +142,8 @@ impl Camera {
             defocus_disk_v,
             defocus_angle,
             background,
+            sqrt_spp,
+            recip_sqrt_spp,
         }
     }
 
@@ -187,8 +206,16 @@ impl Camera {
     }
 
     pub fn get_pixel(&self, world: &Geometry, x: u32, y: u32) -> image::Rgb<u8> {
-        let color = (0..self.samples)
-            .map(|_| self.ray_color(&self.get_ray(x, y), self.max_bounces, world))
+        let mut rng = rand::rng();
+        let color: Vector3<f64> = iproduct!(0..self.sqrt_spp, 0..self.sqrt_spp)
+            .map(|(s_x, s_y)| {
+                self.ray_color(
+                    &self.get_ray(x, y, s_x, s_y, &mut rng),
+                    self.max_bounces,
+                    world,
+                    &mut rng,
+                )
+            })
             .sum::<Vector3<f64>>()
             * self.samples_scale;
 
@@ -200,30 +227,33 @@ impl Camera {
         image::Rgb([r as u8, g as u8, b as u8])
     }
 
-    pub fn get_ray(&self, x: u32, y: u32) -> Ray {
-        let offset = math::random_box(-0.5f64..0.5f64);
+    pub fn get_ray(&self, x: u32, y: u32, s_x: u32, s_y: u32, rng: &mut ThreadRng) -> Ray {
+        let (offset_x, offset_y) = sample_square_stratified(s_x, s_y, self.recip_sqrt_spp, rng);
         let pixel_sample = self.pixel00_loc
-            + (self.pixel_delta_u * (offset.x + x as f64))
-            + (self.pixel_delta_v * (offset.y + y as f64));
+            + (self.pixel_delta_u * (offset_x + x as f64))
+            + (self.pixel_delta_v * (offset_y + y as f64));
 
         let ray_origin = match self.defocus_angle <= 0.0 {
             true => self.center,
-            false => self.defocus_disk_sample(),
+            false => self.defocus_disk_sample(rng),
         };
         let ray_direction = pixel_sample - ray_origin;
 
-        let mut rng = rand::rng();
-        let t = rng.random_range(0.0f64..1.0f64);
-
-        Ray::new(ray_origin, ray_direction, t)
+        Ray::new(ray_origin, ray_direction, rng.random::<f64>())
     }
 
-    pub fn defocus_disk_sample(&self) -> Vector3<f64> {
-        let p = random_in_unit_disk();
+    pub fn defocus_disk_sample(&self, rng: &mut ThreadRng) -> Vector3<f64> {
+        let p = random_in_unit_disk(rng);
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
-    pub fn ray_color(&self, ray: &Ray, depth: u32, world: &Geometry) -> Vector3<f64> {
+    pub fn ray_color(
+        &self,
+        ray: &Ray,
+        depth: u32,
+        world: &Geometry,
+        rng: &mut ThreadRng,
+    ) -> Vector3<f64> {
         if depth == 0 {
             return Vector3::default();
         }
@@ -231,7 +261,7 @@ impl Camera {
         let mut hit_record = HitRecord::default();
         let interval = Interval::new(0.001, f64::INFINITY);
 
-        if !world.hit(ray, &interval, &mut hit_record) {
+        if !world.hit(ray, &interval, &mut hit_record, rng) {
             return self.background;
         }
 
@@ -244,13 +274,13 @@ impl Camera {
 
         if !hit_record
             .material
-            .scatter(ray, &hit_record, &mut attenuation, &mut scattered)
+            .scatter(ray, &hit_record, &mut attenuation, &mut scattered, rng)
         {
             return color_from_emission;
         }
 
         let color_from_scatter =
-            attenuation.component_mul(&self.ray_color(&scattered, depth - 1, world));
+            attenuation.component_mul(&self.ray_color(&scattered, depth - 1, world, rng));
 
         color_from_emission + color_from_scatter
     }
