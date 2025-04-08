@@ -13,6 +13,7 @@ itertools = "0.14.0"
 nalgebra = "0.33.2"
 num_cpus = "1.16.0"
 rand = "0.9.0"
+rand_chacha = "0.9.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde-inline-default = "0.2.3"
 threadpool = "1.8.1"
