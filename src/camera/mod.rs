@@ -4,13 +4,13 @@ use crate::geometry::HitRecord;
 use crate::geometry::Hittable;
 use crate::interval::Interval;
 use crate::material::Surface;
+use crate::math::random_in_unit_disk;
 use crate::ray::Ray;
 use image::RgbImage;
 use itertools::iproduct;
 use nalgebra::Vector3;
 use rand::prelude::*;
 use rand::rngs::ThreadRng;
-use std::f64::consts::PI;
 use std::io::{self, Write};
 use std::sync::Arc;
 use std::sync::mpsc::channel;
@@ -41,29 +41,12 @@ pub struct Camera {
     pub background: Vector3<f64>,
 }
 
-fn random_in_unit_disk(rng: &mut ThreadRng) -> Vector3<f64> {
-    loop {
-        let p = Vector3::new(
-            rng.random_range(-1.0f64..1.0f64),
-            rng.random_range(-1.0f64..1.0f64),
-            0.0,
-        );
-        if p.norm_squared() < 1.0 {
-            return p;
-        }
-    }
-}
-
 fn linear_to_gamma(linear_component: f64) -> f64 {
     if linear_component > 0.0 {
         linear_component.sqrt()
     } else {
         0.0
     }
-}
-
-fn degrees_to_radians(degress: f64) -> f64 {
-    degress * PI / 180.0
 }
 
 fn sample_square_stratified(
@@ -92,7 +75,7 @@ impl Camera {
         let vup = Vector3::from(options.vup);
 
         let fov = options.fov;
-        let theta = degrees_to_radians(fov);
+        let theta = fov.to_radians();
 
         let defocus_angle = options.defocus_angle;
         let focus_dist = options.focus_dist;
@@ -116,7 +99,7 @@ impl Camera {
 
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-        let defocus_radius = focus_dist * degrees_to_radians(defocus_angle / 2.0).tan();
+        let defocus_radius = focus_dist * (defocus_angle / 2.0).to_radians().tan();
         let defocus_disk_u = u * defocus_radius;
         let defocus_disk_v = v * defocus_radius;
 
