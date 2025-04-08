@@ -25,12 +25,12 @@ impl Cube {
         let dz = Vector3::new(0.0, 0.0, max.z - min.z);
 
         let primitives = [
-            Quad::geomtry(Vector3::new(min.x, min.y, max.z), dx, dy, material.clone()),
-            Quad::geomtry(Vector3::new(max.x, min.y, max.z), -dz, dy, material.clone()),
-            Quad::geomtry(Vector3::new(max.x, min.y, min.z), -dx, dy, material.clone()),
-            Quad::geomtry(Vector3::new(min.x, min.y, min.z), dz, dy, material.clone()),
-            Quad::geomtry(Vector3::new(min.x, max.y, max.z), dx, -dz, material.clone()),
-            Quad::geomtry(Vector3::new(min.x, min.y, min.z), dx, dz, material.clone()),
+            Quad::geometry(Vector3::new(min.x, min.y, max.z), dx, dy, material.clone()),
+            Quad::geometry(Vector3::new(max.x, min.y, max.z), -dz, dy, material.clone()),
+            Quad::geometry(Vector3::new(max.x, min.y, min.z), -dx, dy, material.clone()),
+            Quad::geometry(Vector3::new(min.x, min.y, min.z), dz, dy, material.clone()),
+            Quad::geometry(Vector3::new(min.x, max.y, max.z), dx, -dz, material.clone()),
+            Quad::geometry(Vector3::new(min.x, min.y, min.z), dx, dz, material.clone()),
         ];
 
         let children = Box::new(BvhNode::new(primitives.to_vec()));

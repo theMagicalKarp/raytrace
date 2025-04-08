@@ -5,6 +5,7 @@ use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
+use crate::geometry::triangle::Triangle;
 use crate::geometry::volume::Volume;
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
@@ -239,13 +240,13 @@ enum Transform {
 }
 
 impl Transform {
-    pub fn apply(&self, geomtry: Geometry) -> Geometry {
+    pub fn apply(&self, geometry: Geometry) -> Geometry {
         match self {
             Transform::Translate(trans) => {
-                Translate::geometry(geomtry, Vector3::from(trans.offset))
+                Translate::geometry(geometry, Vector3::from(trans.offset))
             }
             Transform::Rotate(trans) => {
-                Rotate::geometry(geomtry, trans.axis.clone(), trans.degrees)
+                Rotate::geometry(geometry, trans.axis.clone(), trans.degrees)
             }
         }
     }
@@ -312,10 +313,38 @@ struct RawQuad {
 impl RawQuad {
     fn into_quad(self) -> Result<Geometry, Box<dyn Error>> {
         let material = self.material_def.into_material()?;
-        let geometry = Quad::geomtry(
+        let geometry = Quad::geometry(
             Vector3::from(self.position),
             Vector3::from(self.u),
             Vector3::from(self.v),
+            material,
+        );
+        Ok(self
+            .transform
+            .into_iter()
+            .fold(geometry, |geom, transform| transform.apply(geom)))
+    }
+}
+
+#[derive(Deserialize)]
+struct RawTriangle {
+    a: [f64; 3],
+    b: [f64; 3],
+    c: [f64; 3],
+
+    #[serde(flatten)]
+    material_def: MaterialDef,
+    #[serde(default)]
+    transform: Vec<Transform>,
+}
+
+impl RawTriangle {
+    fn into_triangle(self) -> Result<Geometry, Box<dyn Error>> {
+        let material = self.material_def.into_material()?;
+        let geometry = Triangle::geometry(
+            Vector3::from(self.a),
+            Vector3::from(self.b),
+            Vector3::from(self.c),
             material,
         );
         Ok(self
@@ -368,6 +397,8 @@ enum ObjectDef {
     Quad(RawQuad),
     #[serde(rename = "cube")]
     Cube(RawCube),
+    #[serde(rename = "triangle")]
+    Triangle(RawTriangle),
 }
 
 impl<'de> Deserialize<'de> for Geometry {
@@ -379,6 +410,9 @@ impl<'de> Deserialize<'de> for Geometry {
             ObjectDef::Sphere(raw) => Ok(raw.into_sphere().map_err(serde::de::Error::custom)?),
             ObjectDef::Quad(raw) => Ok(raw.into_quad().map_err(serde::de::Error::custom)?),
             ObjectDef::Cube(raw) => Ok(raw.into_cube().map_err(serde::de::Error::custom)?),
+            ObjectDef::Triangle(raw) => {
+                Ok(raw.into_triangle().map_err(serde::de::Error::custom)?)
+            }
         }
     }
 }

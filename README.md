@@ -103,10 +103,10 @@ focus_dist = 10.0
 ### Objects
 
 A scene consists of various objects, which are represented with combination of
-"material" and "geomtry" and can be configured using adding items to the list of
+"material" and "geometry" and can be configured using adding items to the list of
 "objects".
 
-### Geomtry
+### Geometry
 
 #### Sphere
 
@@ -151,6 +151,22 @@ b = [1.0, 1.0, 1.0]
 
 - `a`: The first corner of the cube (usually the minimum coordinate).
 - `b`: The opposite corner (usually the maximum coordinate).
+
+#### Triangle
+
+![](./examples/primitives/geometry/triangle/render.png)
+
+```toml
+[[objects]]
+shape = "triangle"
+a = [2.0, 0.0, 2.0]
+b = [2.0, 0.0, -2.0]
+c = [-2.0, 0.0, 0.0]
+```
+
+- `a`: The first vertices
+- `b`: The second vertices
+- `c`: The third vertices
 
 ### Materials
 

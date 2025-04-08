@@ -7,6 +7,7 @@ pub mod quad;
 pub mod rotate;
 pub mod sphere;
 pub mod translate;
+pub mod triangle;
 pub mod volume;
 
 use crate::geometry::aabb::Aabb;
@@ -17,6 +18,7 @@ use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
+use crate::geometry::triangle::Triangle;
 use crate::geometry::volume::Volume;
 use crate::interval::Interval;
 use crate::material::Material;
@@ -47,6 +49,7 @@ pub enum Geometry {
     Translate(Translate),
     Rotate(Rotate),
     Volume(Volume),
+    Triangle(Triangle),
 }
 
 impl Hittable for Geometry {
@@ -58,27 +61,29 @@ impl Hittable for Geometry {
         rng: &mut ThreadRng,
     ) -> bool {
         match self {
-            Geometry::Empty(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Quad(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Sphere(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::BvhNode(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Cube(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Translate(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Rotate(geomtry) => geomtry.hit(ray, interval, record, rng),
-            Geometry::Volume(geomtry) => geomtry.hit(ray, interval, record, rng),
+            Geometry::Empty(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Quad(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Sphere(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::BvhNode(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Cube(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Translate(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Rotate(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Volume(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Triangle(geometry) => geometry.hit(ray, interval, record, rng),
         }
     }
 
     fn bounding_box(&self) -> Aabb {
         match self {
-            Geometry::Empty(geomtry) => geomtry.bounding_box(),
-            Geometry::Quad(geomtry) => geomtry.bounding_box(),
-            Geometry::Sphere(geomtry) => geomtry.bounding_box(),
-            Geometry::BvhNode(geomtry) => geomtry.bounding_box(),
-            Geometry::Cube(geomtry) => geomtry.bounding_box(),
-            Geometry::Translate(geomtry) => geomtry.bounding_box(),
-            Geometry::Rotate(geomtry) => geomtry.bounding_box(),
-            Geometry::Volume(geomtry) => geomtry.bounding_box(),
+            Geometry::Empty(geometry) => geometry.bounding_box(),
+            Geometry::Quad(geometry) => geometry.bounding_box(),
+            Geometry::Sphere(geometry) => geometry.bounding_box(),
+            Geometry::BvhNode(geometry) => geometry.bounding_box(),
+            Geometry::Cube(geometry) => geometry.bounding_box(),
+            Geometry::Translate(geometry) => geometry.bounding_box(),
+            Geometry::Rotate(geometry) => geometry.bounding_box(),
+            Geometry::Volume(geometry) => geometry.bounding_box(),
+            Geometry::Triangle(geometry) => geometry.bounding_box(),
         }
     }
 }
