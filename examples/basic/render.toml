@@ -16,9 +16,8 @@ background = [0.70, 0.80, 0.99]
 shape = "sphere"
 position = [0.0, -1000.0, 0.0]
 radius = 1000.0
-material = "checkered"
-even = [0.2, 0.3, 0.1]
-odd = [0.9, 0.9, 0.9]
+material = "lambertian"
+albedo = [0.43, 0.43, 0.43]
 
 # Large Balls
 [[objects]]

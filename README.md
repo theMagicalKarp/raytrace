@@ -178,7 +178,7 @@ albedo = [1.0, 0.2, 0.3] # red
 material = "checkered"
 even = [0.2, 0.3, 0.1] # light green
 odd = [0.9, 0.9, 0.9] # white
-scale = 2.0
+scale = 0.2
 ```
 
 - `even`: The color of the even checkered squares.

@@ -60,14 +60,14 @@ impl Checkered {
 }
 
 impl Sample for Checkered {
-    fn sample(&self, _: f64, _: f64, p: Vector3<f64>) -> Vector3<f64> {
-        let x_int = (p.x * self.scale).floor() as i32;
-        let y_int = (p.y * self.scale).floor() as i32;
-        let z_int = (p.z * self.scale).floor() as i32;
+    fn sample(&self, u: f64, v: f64, _: Vector3<f64>) -> Vector3<f64> {
+        let x_int = (u * self.scale).floor() as i32;
+        let y_int = (v * self.scale).floor() as i32;
 
-        match (x_int + y_int + z_int) % 2 {
-            0 => self.even,
-            _ => self.odd,
+        if (x_int + y_int) % 2 == 0 {
+            self.even
+        } else {
+            self.odd
         }
     }
 }

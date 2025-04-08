@@ -14,7 +14,7 @@ shape = "sphere"
 position = [0.0, -10.0, 0.0]
 radius = 10.0
 material = "checkered"
-scale = 0.32
+scale = 0.032
 even = [0.2, 0.3, 0.1]
 odd = [0.9, 0.9, 0.9]
 
@@ -23,6 +23,6 @@ shape = "sphere"
 position = [0.0, 10.0, 0.0]
 radius = 10.0
 material = "checkered"
-scale = 0.32
+scale = 0.032
 even = [0.2, 0.3, 0.1]
 odd = [0.9, 0.9, 0.9]
