@@ -41,7 +41,7 @@ impl Quad {
             w,
         }
     }
-    pub fn geomtry(
+    pub fn geometry(
         q: Vector3<f64>,
         u: Vector3<f64>,
         v: Vector3<f64>,
