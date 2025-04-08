@@ -1,3 +1,4 @@
+use nalgebra::Vector2;
 use nalgebra::Vector3;
 use rand::prelude::*;
 
@@ -21,6 +22,18 @@ pub fn random_normal<T: Rng>(rng: &mut T) -> Vector3<f64> {
 
 pub fn near_zero(v: &Vector3<f64>) -> bool {
     v.x.abs() < 1e-8 && v.y.abs() < 1e-8 && v.z.abs() < 1e-8
+}
+
+pub fn random_in_unit_disk<T: Rng>(rng: &mut T) -> Vector2<f64> {
+    loop {
+        let p = Vector2::new(
+            rng.random_range(-1.0f64..1.0f64),
+            rng.random_range(-1.0f64..1.0f64),
+        );
+        if p.norm_squared() < 1.0 {
+            return p;
+        }
+    }
 }
 
 pub fn reflect(a: &Vector3<f64>, n: &Vector3<f64>) -> Vector3<f64> {
@@ -77,6 +90,17 @@ mod tests {
             let v = random_normal(&mut rng);
             let norm = v.norm();
             assert!((1.0 - norm).abs() < 1e-8);
+        }
+    }
+
+    #[test]
+    fn test_random_in_unit_disk() {
+        let mut rng = ChaCha8Rng::seed_from_u64(0xdeadbeef);
+        let p = random_in_unit_disk(&mut rng);
+        assert_eq!(p, Vector2::new(0.7809098202583038, -0.09449568329690283,));
+        for _ in 0..10000 {
+            let p = random_in_unit_disk(&mut rng);
+            assert!(p.norm_squared() < 1.0); // Ensure point is within the unit disk
         }
     }
 
