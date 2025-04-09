@@ -41,6 +41,7 @@ examples: release
 	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/cube/render.toml --output examples/primitives/geometry/cube/render.png
 	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/quad/render.toml --output examples/primitives/geometry/quad/render.png
 	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/triangle/render.toml --output examples/primitives/geometry/triangle/render.png
+	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/wavefront/render.toml --output examples/primitives/geometry/wavefront/render.png
 
 	$(RELEASE_DIR)/raytrace --config examples/primitives/material/lambertian/render.toml --output examples/primitives/material/lambertian/render.png
 	$(RELEASE_DIR)/raytrace --config examples/primitives/material/metal/render.toml --output examples/primitives/material/metal/render.png
