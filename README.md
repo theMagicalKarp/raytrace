@@ -168,6 +168,18 @@ c = [-2.0, 0.0, 0.0]
 - `b`: The second vertices
 - `c`: The third vertices
 
+#### Wavefront _(.obj file)_
+
+![](./examples/primitives/geometry/wavefront/render.png)
+
+```toml
+[[objects]]
+shape = "wavefront"
+file = "teapot.obj"
+```
+
+- `file`: Path to the `.obj` file _(relative to config location)_
+
 ### Materials
 
 Materials define the visual properties of the objects. Below are the supported

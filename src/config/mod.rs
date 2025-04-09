@@ -3,10 +3,13 @@ use crate::geometry::axis::Axis;
 use crate::geometry::cube::Cube;
 use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
+use crate::geometry::scale::Scale;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
 use crate::geometry::triangle::Triangle;
+use crate::geometry::triangle::Vertex;
 use crate::geometry::volume::Volume;
+use crate::geometry::wavefront::Wavefront;
 use crate::material::Material;
 use crate::material::dielectric::Dielectric;
 use crate::material::lambertian::Lambertian;
@@ -20,10 +23,14 @@ use clap::Parser;
 use colored::Colorize;
 use image::ImageReader;
 use nalgebra::Vector3;
+use obj::raw::object::RawObj;
+use obj::raw::object::parse_obj;
 use serde::Deserialize;
 use serde_inline_default::serde_inline_default;
 use std::error::Error;
 use std::fmt;
+use std::fs::File;
+use std::io::BufReader;
 use std::ops::Range;
 use std::path::PathBuf;
 
@@ -231,12 +238,19 @@ struct RawRotate {
 }
 
 #[derive(Deserialize)]
+struct RawScale {
+    scalar: [f64; 3],
+}
+
+#[derive(Deserialize)]
 #[serde(tag = "type")]
 enum Transform {
     #[serde(rename = "translate")]
     Translate(RawTranslate),
     #[serde(rename = "rotate")]
     Rotate(RawRotate),
+    #[serde(rename = "scale")]
+    Scale(RawScale),
 }
 
 impl Transform {
@@ -248,6 +262,7 @@ impl Transform {
             Transform::Rotate(trans) => {
                 Rotate::geometry(geometry, trans.axis.clone(), trans.degrees)
             }
+            Transform::Scale(trans) => Scale::geometry(geometry, Vector3::from(trans.scalar)),
         }
     }
 }
@@ -342,11 +357,43 @@ impl RawTriangle {
     fn into_triangle(self) -> Result<Geometry, Box<dyn Error>> {
         let material = self.material_def.into_material()?;
         let geometry = Triangle::geometry(
-            Vector3::from(self.a),
-            Vector3::from(self.b),
-            Vector3::from(self.c),
+            Vertex::new(Vector3::from(self.a), None),
+            Vertex::new(Vector3::from(self.b), None),
+            Vertex::new(Vector3::from(self.c), None),
             material,
         );
+        Ok(self
+            .transform
+            .into_iter()
+            .fold(geometry, |geom, transform| transform.apply(geom)))
+    }
+}
+
+#[derive(Deserialize)]
+struct RawWavefront {
+    file: String,
+
+    #[serde(flatten)]
+    material_def: MaterialDef,
+    #[serde(default)]
+    transform: Vec<Transform>,
+}
+
+impl RawWavefront {
+    fn into_wavefront(self) -> Result<Geometry, Box<dyn Error>> {
+        let args = Args::parse();
+        let config_dir = args
+            .config
+            .parent()
+            .ok_or("Failed to get parent directory")?;
+
+        let wavefront_path = config_dir.join(self.file);
+        let wavefront_raw = BufReader::new(File::open(wavefront_path)?);
+        let object: RawObj = parse_obj(wavefront_raw)?;
+
+        let material = self.material_def.into_material()?;
+
+        let geometry = Wavefront::geometry(&object, material);
         Ok(self
             .transform
             .into_iter()
@@ -399,6 +446,8 @@ enum ObjectDef {
     Cube(RawCube),
     #[serde(rename = "triangle")]
     Triangle(RawTriangle),
+    #[serde(rename = "wavefront")]
+    Wavefront(RawWavefront),
 }
 
 impl<'de> Deserialize<'de> for Geometry {
@@ -412,6 +461,9 @@ impl<'de> Deserialize<'de> for Geometry {
             ObjectDef::Cube(raw) => Ok(raw.into_cube().map_err(serde::de::Error::custom)?),
             ObjectDef::Triangle(raw) => {
                 Ok(raw.into_triangle().map_err(serde::de::Error::custom)?)
+            }
+            ObjectDef::Wavefront(raw) => {
+                Ok(raw.into_wavefront().map_err(serde::de::Error::custom)?)
             }
         }
     }

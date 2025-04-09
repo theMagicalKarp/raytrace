@@ -4,6 +4,7 @@ use crate::ray::Ray;
 use itertools::iproduct;
 use nalgebra::Vector3;
 use std::ops::Add;
+use std::ops::Mul;
 
 #[derive(Default, Debug, Clone)]
 pub struct Aabb {
@@ -114,6 +115,13 @@ impl Add<Vector3<f64>> for Aabb {
     type Output = Self;
     fn add(self, offset: Vector3<f64>) -> Self::Output {
         Aabb::new(self.x + offset.x, self.y + offset.y, self.z + offset.z)
+    }
+}
+
+impl Mul<Vector3<f64>> for Aabb {
+    type Output = Self;
+    fn mul(self, scalar: Vector3<f64>) -> Self::Output {
+        Aabb::new(self.x * scalar.x, self.y * scalar.y, self.z * scalar.z)
     }
 }
 
@@ -230,5 +238,19 @@ mod tests {
         assert_eq!(translated.y.max, 3.0);
         assert_eq!(translated.z.min, 3.0);
         assert_eq!(translated.z.max, 4.0);
+    }
+
+    #[test]
+    fn test_aabb_mul_vector() {
+        let aabb = Aabb::from_points(Vector3::new(1.0, 1.0, 1.0), Vector3::new(2.0, 2.0, 2.0));
+        let scalar = Vector3::new(2.0, 3.0, 4.0);
+        let scaled = aabb * scalar;
+
+        assert_eq!(scaled.x.min, 2.0);
+        assert_eq!(scaled.x.max, 4.0);
+        assert_eq!(scaled.y.min, 3.0);
+        assert_eq!(scaled.y.max, 6.0);
+        assert_eq!(scaled.z.min, 4.0);
+        assert_eq!(scaled.z.max, 8.0);
     }
 }

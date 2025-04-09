@@ -1,5 +1,6 @@
 use core::f64;
 use std::ops::Add;
+use std::ops::Mul;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Interval {
@@ -91,6 +92,23 @@ impl Add<f64> for Interval {
         Interval {
             min: self.min + offset,
             max: self.max + offset,
+        }
+    }
+}
+
+impl Mul<f64> for Interval {
+    type Output = Self;
+    fn mul(self, factor: f64) -> Self::Output {
+        if factor >= 0.0 {
+            Interval {
+                min: self.min * factor,
+                max: self.max * factor,
+            }
+        } else {
+            Interval {
+                min: self.max * factor,
+                max: self.min * factor,
+            }
         }
     }
 }
@@ -195,5 +213,29 @@ mod tests {
         let result = interval + 2.0;
         assert_eq!(result.min, 3.0);
         assert_eq!(result.max, 7.0);
+    }
+
+    #[test]
+    fn test_interval_mul_positive() {
+        let interval = Interval::new(1.0, 5.0);
+        let result = interval * 2.0;
+        assert_eq!(result.min, 2.0);
+        assert_eq!(result.max, 10.0);
+    }
+
+    #[test]
+    fn test_interval_mul_negative() {
+        let interval = Interval::new(1.0, 5.0);
+        let result = interval * -2.0;
+        assert_eq!(result.min, -10.0);
+        assert_eq!(result.max, -2.0);
+    }
+
+    #[test]
+    fn test_interval_mul_zero() {
+        let interval = Interval::new(1.0, 5.0);
+        let result = interval * 0.0;
+        assert_eq!(result.min, 0.0);
+        assert_eq!(result.max, 0.0);
     }
 }

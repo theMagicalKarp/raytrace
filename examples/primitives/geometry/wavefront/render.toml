@@ -1,0 +1,132 @@
+[camera]
+aspect_ratio = "widescreen"
+image_width = 600
+samples = 3000
+max_bounces = 64
+fov = 40
+look_from = [7.0, 5.0, 3.0]
+look_at = [0.0, 2.2, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+# Monkey
+[[objects]]
+shape = "wavefront"
+file = "suzanne.obj"
+material = "lambertian"
+albedo = [ 0.73, 0.73, 0.73]
+
+[[objects.transform]]
+type = "scale"
+scalar = [1.25, 1.25, 1.25]
+
+[[objects.transform]]
+type = "rotate"
+axis = "x"
+degrees = -30.0
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 210.0
+
+[[objects.transform]]
+type = "translate"
+offset = [3.0, 2.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 180
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 0.0, -1.0]
+
+# Monkey
+[[objects]]
+shape = "wavefront"
+file = "suzanne.obj"
+material = "lambertian"
+albedo = [ 0.73, 0.73, 0.73]
+
+[[objects.transform]]
+type = "scale"
+scalar = [1.25, 1.25, 1.25]
+
+[[objects.transform]]
+type = "rotate"
+axis = "x"
+degrees = -30.0
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 80.0
+
+[[objects.transform]]
+type = "translate"
+offset = [2.5, 2.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = 20
+
+# Teapot
+[[objects]]
+shape = "wavefront"
+file = "teapot.obj"
+
+material = "lambertian"
+albedo = [ 0.73, 0.73, 0.73]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees =  150.0
+
+[[objects.transform]]
+type = "scale"
+scalar = [0.5, 0.5, 0.5]
+
+[[objects.transform]]
+type = "translate"
+offset = [3.0, 1.2, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+axis = "y"
+degrees = -80
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 0.0, -1.0]
+
+# Floor
+[[objects]]
+shape = "quad"
+position = [500.0, 0.0, 500.0]
+u = [-1000.0, 0.0, 0.0]
+v = [0.0, 0.0, -1000.0]
+scale = 0.002
+material = "checkered"
+even = [0.2, 0.3, 0.1]
+odd = [0.9, 0.9, 0.9]
+
+# Light
+[[objects]]
+shape = "quad"
+position = [5.0, 0.0, 5.0]
+u = [-10.0, 0.0, 0.0]
+v = [0.0, 0.0, -10.0]
+material = "light"
+emit = [3.0, 3.0, 3.0]
+
+[[objects.transform]]
+type = "translate"
+offset = [0.0, 10.0, 0.0]
+
+[[objects.transform]]
+type = "rotate"
+degrees = -30.0
+axis = "z"

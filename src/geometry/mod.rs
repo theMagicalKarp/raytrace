@@ -5,10 +5,12 @@ pub mod cube;
 pub mod empty;
 pub mod quad;
 pub mod rotate;
+pub mod scale;
 pub mod sphere;
 pub mod translate;
 pub mod triangle;
 pub mod volume;
+pub mod wavefront;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::bvh::BvhNode;
@@ -16,10 +18,12 @@ use crate::geometry::cube::Cube;
 use crate::geometry::empty::Empty;
 use crate::geometry::quad::Quad;
 use crate::geometry::rotate::Rotate;
+use crate::geometry::scale::Scale;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::translate::Translate;
 use crate::geometry::triangle::Triangle;
 use crate::geometry::volume::Volume;
+use crate::geometry::wavefront::Wavefront;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::material::lambertian::Lambertian;
@@ -50,6 +54,8 @@ pub enum Geometry {
     Rotate(Rotate),
     Volume(Volume),
     Triangle(Triangle),
+    Wavefront(Wavefront),
+    Scale(Scale),
 }
 
 impl Hittable for Geometry {
@@ -70,6 +76,8 @@ impl Hittable for Geometry {
             Geometry::Rotate(geometry) => geometry.hit(ray, interval, record, rng),
             Geometry::Volume(geometry) => geometry.hit(ray, interval, record, rng),
             Geometry::Triangle(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Wavefront(geometry) => geometry.hit(ray, interval, record, rng),
+            Geometry::Scale(geometry) => geometry.hit(ray, interval, record, rng),
         }
     }
 
@@ -84,6 +92,8 @@ impl Hittable for Geometry {
             Geometry::Rotate(geometry) => geometry.bounding_box(),
             Geometry::Volume(geometry) => geometry.bounding_box(),
             Geometry::Triangle(geometry) => geometry.bounding_box(),
+            Geometry::Wavefront(geometry) => geometry.bounding_box(),
+            Geometry::Scale(geometry) => geometry.bounding_box(),
         }
     }
 }
