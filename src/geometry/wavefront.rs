@@ -8,6 +8,7 @@ use crate::geometry::triangle::Vertex;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
+use obj::raw::object::Group;
 use obj::raw::object::Polygon;
 use obj::raw::object::RawObj;
 use rand::rngs::ThreadRng;
@@ -18,9 +19,19 @@ pub struct Wavefront {
 }
 
 impl Wavefront {
-    pub fn new(object: &RawObj, material: Material) -> Self {
-        let primitives: Vec<Geometry> = object
-            .polygons
+    pub fn new(object: &RawObj, group: Option<&Group>, material: Material) -> Self {
+        let polygons = match group {
+            Some(group) => group
+                .polygons
+                .iter()
+                .flat_map(|index_range| {
+                    (index_range.start..index_range.end).map(|index| object.polygons[index].clone())
+                })
+                .collect(),
+            None => object.polygons.clone(),
+        };
+
+        let primitives: Vec<Geometry> = polygons
             .iter()
             .flat_map(|polygon| match polygon {
                 Polygon::P(polygon) => (1..polygon.len() - 1)
@@ -84,8 +95,8 @@ impl Wavefront {
 
         Wavefront { children }
     }
-    pub fn geometry(object: &RawObj, material: Material) -> Geometry {
-        Geometry::Wavefront(Wavefront::new(object, material))
+    pub fn geometry(object: &RawObj, group: Option<&Group>, material: Material) -> Geometry {
+        Geometry::Wavefront(Wavefront::new(object, group, material))
     }
 }
 

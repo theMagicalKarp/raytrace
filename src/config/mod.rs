@@ -23,6 +23,7 @@ use clap::Parser;
 use colored::Colorize;
 use image::ImageReader;
 use nalgebra::Vector3;
+use obj::raw::object::Group;
 use obj::raw::object::RawObj;
 use obj::raw::object::parse_obj;
 use serde::Deserialize;
@@ -372,6 +373,7 @@ impl RawTriangle {
 #[derive(Deserialize)]
 struct RawWavefront {
     file: String,
+    group: Option<String>,
 
     #[serde(flatten)]
     material_def: MaterialDef,
@@ -393,7 +395,22 @@ impl RawWavefront {
 
         let material = self.material_def.into_material()?;
 
-        let geometry = Wavefront::geometry(&object, material);
+        let group = match self.group {
+            Some(group) => match object.groups.get(&group) {
+                Some(group) => Ok::<Option<&Group>, Box<dyn Error>>(Some(group)),
+                None => {
+                    return Err(format!(
+                        "Group {} does not exist, only found {:?}",
+                        group,
+                        object.groups.keys()
+                    )
+                    .into());
+                }
+            },
+            _ => Ok(None),
+        }?;
+
+        let geometry = Wavefront::geometry(&object, group, material);
         Ok(self
             .transform
             .into_iter()

@@ -11,7 +11,10 @@ three-part book series on implementing ray tracing with C++.
 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;" align="center">
   <img src="./examples/cornell_box/render.png" alt="Cornell Box" style="max-width: 100%; height: auto;" width="400px">
   <img src="./examples/sweet_dreams/render.png" alt="Sweet Dreams" style="max-width: 100%; height: auto;" width="400px">
+  <img src="./examples/melee/render.png" alt="Sweet Dreams" style="max-width: 100%; height: auto;" width="800px">
 </div>
+
+
 
 ## Requirements
 
@@ -179,6 +182,7 @@ file = "teapot.obj"
 ```
 
 - `file`: Path to the `.obj` file _(relative to config location)_
+- `group`: Optional name of the specific "group" to load from the `.obj` file.
 
 ### Materials
 
