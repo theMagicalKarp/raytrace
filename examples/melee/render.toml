@@ -1,0 +1,82 @@
+[camera]
+aspect_ratio = "widescreen"
+image_width = 1200
+samples = 10000
+max_bounces = 64
+fov = 25
+look_from = [0.815, 0.94, 3.6]
+look_at = [0.0, 0.25, 0.0]
+vup = [0.0, 1.0, 0.0]
+
+# Floor
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+material = "lambertian"
+group = "Plane_Plane"
+albedo = [ 0.73, 0.73, 0.73 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Torus_Torus"
+material = "glass"
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Cube_Cube"
+material = "lambertian"
+albedo = [ 0.1, 0.9, 0.1 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Cylinder_Cylinder"
+material = "lambertian"
+albedo = [ 0.9, 0.1, 0.1 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Cube.002_Cube.002"
+material = "lambertian"
+albedo = [ 0.76, 0.39, 0.07 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Icosphere_Icosphere"
+material = "metal"
+albedo = [ 0.8, 0.8, 0.8 ]
+roughness = 0.13
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Plane.001_Plane.002"
+material = "lambertian"
+albedo = [ 0.8, 0.16, 0.74 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Cube.001_Cube.001"
+material = "lambertian"
+albedo = [ 0.76, 0.76, 0.76 ]
+
+[[objects]]
+shape = "wavefront"
+file = "Melee.obj"
+group = "Cube.003_Cube.004"
+material = "lambertian"
+albedo = [ 0.01, 0.8, 0.75 ]
+
+# Light
+[[objects]]
+shape = "sphere"
+position = [4.0, 6.0, 1.0]
+radius = 1.5
+
+material = "light"
+emit = [15.0, 15.0, 15.0]

@@ -36,6 +36,7 @@ examples: release
 	$(RELEASE_DIR)/raytrace --config examples/quads/render.toml --output examples/quads/render.png
 	$(RELEASE_DIR)/raytrace --config examples/smoke/render.toml --output examples/smoke/render.png
 	$(RELEASE_DIR)/raytrace --config examples/sweet_dreams/render.toml --output examples/sweet_dreams/render.png
+	$(RELEASE_DIR)/raytrace --config examples/melee/render.toml --output examples/melee/render.png
 
 	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/sphere/render.toml --output examples/primitives/geometry/sphere/render.png
 	$(RELEASE_DIR)/raytrace --config examples/primitives/geometry/cube/render.toml --output examples/primitives/geometry/cube/render.png
