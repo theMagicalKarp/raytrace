@@ -1,0 +1,51 @@
+[tools]
+rust = { version = "1.96", profile = "default", components = "rustfmt,clippy" }
+
+[tasks.default]
+description = "Run the full local check: tests, lints and a release build"
+depends = ["check", "release"]
+
+[tasks.check]
+description = "Run the tests and check formatting and linting without changing any files"
+depends = ["fmt", "lint", "test"]
+
+[tasks.fix]
+description = "Auto-apply the formatter and linter suggestions"
+run = [
+  "cargo clippy --fix --all-targets --all-features --allow-dirty --allow-staged",
+  "cargo fmt",
+]
+
+[tasks.build]
+description = "Build the project in debug mode"
+run = "cargo build"
+
+[tasks.release]
+description = "Build the project in release mode"
+run = "cargo build --release"
+
+[tasks.test]
+description = "Run the tests"
+run = "cargo test --all-features"
+
+[tasks.fmt]
+description = "Check the code is formatted"
+run = "cargo fmt --check"
+
+[tasks.lint]
+description = "Check for linting issues"
+run = "cargo clippy --all-targets --all-features"
+
+[tasks.examples]
+description = "Re-generate the example renders"
+depends = ["release"]
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+find examples -name render.toml | sort | while read -r config; do
+  dir="$(dirname "$config")"
+  echo "Rendering $dir"
+  target/release/raytrace --config "$config" --output "$dir/render.png"
+done
+"""

@@ -18,8 +18,16 @@ three-part book series on implementing ray tracing with C++.
 
 ## Requirements
 
-- [Rust](https://www.rust-lang.org/)
-- [Make](https://www.gnu.org/software/make/manual/make.html)
+- [mise](https://mise.jdx.dev/) — installs the pinned
+  [Rust](https://www.rust-lang.org/) toolchain and runs the project tasks
+
+```Bash
+mise install     # install the pinned Rust toolchain
+mise run         # test, lint and build a release binary
+mise run check   # run the tests and check formatting and linting
+mise run fix     # auto-apply formatter and linter suggestions
+mise tasks       # list every available task
+```
 
 ## Usage
 

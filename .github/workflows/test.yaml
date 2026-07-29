@@ -15,33 +15,31 @@ jobs:
     name: cargo test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo test --all-features
+      - uses: actions/checkout@v7.0.1
+      - uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
+      - run: mise run test
 
   formatting:
     name: cargo fmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: rustfmt,clippy
+      - uses: actions/checkout@v7.0.1
+      - uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
       - name: Rustfmt Check
-        uses: actions-rust-lang/rustfmt@v1
+        run: mise run fmt
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
+        run: mise run lint
 
   build:
     name: cargo build
     needs: [test, formatting]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run Clippy
-        run: cargo build --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
+      - name: Build release
+        run: mise run release
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: build
           path: target/release/raytrace
@@ -58,8 +56,8 @@ jobs:
           - sweet_dreams
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
         with:
           name: build
           path: target/release
@@ -67,7 +65,7 @@ jobs:
       - env:
           CONFIG: ${{ matrix.config }}
         run: ./target/release/raytrace --config "examples/$CONFIG/render.toml" --output render.png --samples 100
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
             name: ${{ matrix.config }}-render
             path: render.png
